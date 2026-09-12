@@ -7,6 +7,7 @@ import datetime as dt
 import json
 import urllib.parse as urlp
 import copy
+import re
 
 backGroundStyle="background-color:#404040;"
 
@@ -149,12 +150,65 @@ class MainWindow(qtw.QMainWindow):
     
     self.ensureCurrentTimeSet()
     self.updateAddVoteWidget()
-  def ensureCurrentVideoHasVoteTimes(self,minSecondsBetweenVotes=30):
+  def checkLine(self,linePrev,lineCur,lineNext,ts,te,timeLastVote,voteTimes,
+    voteTimesOrder):
+    
+    minSecondsBetweenVotes=self.database["minSecondsBetweenVoteEvents"]
+    matchWords=self.database["matchWords"]
+    
+    if lineCur!="":
+      lineCur=lineCur.strip()
+      if "-->" in lineCur:
+        times=lineCur.split(" --> ")
+        ts=times[0]
+        te=times[1]
+      else:
+        
+        hadMatch=False
+        wordMatched=None
+        for word in matchWords:
+          wordLower=word.lower()
+          lineLower=lineCur.lower()
+          if wordLower in lineLower:
+            hadMatch=True
+            wordMatched=word
+            matchedLinePrev=re.sub(r"<.*?>","",linePrev)
+            matchedLineCur=re.sub(r"<.*?>","",lineCur)
+            matchedLineNext=re.sub(r"<.*?>","",lineNext)
+        if hadMatch:
+          
+          ts=ts.split('.')[0]#NOTE: remove fractional seconds
+          curTime=dt.datetime.strptime(ts,"%H:%M:%S")
+          timeBetweenVote=False
+          if timeLastVote!=None:
+            timeDelta=curTime-timeLastVote
+            if timeDelta.total_seconds()>minSecondsBetweenVotes:
+              timeBetweenVote=True
+          else:
+            timeBetweenVote=True
+            
+          if timeBetweenVote:
+            
+            timeLastVote=curTime
+            timeDict={"h":timeLastVote.hour,"m":timeLastVote.minute,
+              "s":timeLastVote.second}
+            timeSeconds=getTotalSeconds(timeDict)
+            
+            int(timeLastVote.hour*60*60+timeLastVote.minute*60+
+              timeLastVote.second)
+            voteTime={"time":timeDict,"wordMatched":wordMatched,
+              "matchedLinePrev":matchedLinePrev,
+              "matchedLineCur":matchedLineCur,
+              "matchedLineNext":matchedLineNext}
+            voteTimes[str(timeSeconds)]=voteTime
+            voteTimesOrder.append(str(timeSeconds))
+    return (ts,te,timeLastVote)
+  def ensureCurrentVideoHasVoteTimes(self):
+    
     self.ensureCurrentVideoHasSubtitles()
     self.showStatusMessage("Ensuring current video has vote times")
     url=self.currentVideo
     video=self.database["videos"][url]
-    matchWords=self.database["matchWords"]
     addVoteTimes=True
     if "voteTimes" in video.keys():
       voteTimes=video["voteTimes"]
@@ -171,48 +225,22 @@ class MainWindow(qtw.QMainWindow):
       ts=None
       te=None
       timeLastVote=None
+      linePrev=""
+      lineCur=""
+      lineNext=""
       for line in file:
+        linePrev=lineCur
+        lineCur=lineNext
+        lineNext=line
         
-        line=line.strip()
-        if "-->" in line:
-          times=line.split(" --> ")
-          ts=times[0]
-          te=times[1]
-        else:
-          
-          hadMatch=False
-          wordMatched=None
-          for word in matchWords:
-            wordLower=word.lower()
-            lineLower=line.lower()
-            if wordLower in lineLower:
-              hadMatch=True
-              wordMatched=word
-          
-          if hadMatch:
-            
-            ts=ts.split('.')[0]#NOTE: remove fractional seconds
-            curTime=dt.datetime.strptime(ts,"%H:%M:%S")
-            timeBetweenVote=False
-            if timeLastVote!=None:
-              timeDelta=curTime-timeLastVote
-              if timeDelta.total_seconds()>minSecondsBetweenVotes:
-                timeBetweenVote=True
-            else:
-              timeBetweenVote=True
-              
-            if timeBetweenVote:
-              
-              timeLastVote=curTime
-              timeDict={"h":timeLastVote.hour,"m":timeLastVote.minute,
-                "s":timeLastVote.second}
-              timeSeconds=getTotalSeconds(timeDict)
-              
-              int(timeLastVote.hour*60*60+timeLastVote.minute*60+
-                timeLastVote.second)
-              voteTime={"time":timeDict,"wordMatched":wordMatched}
-              voteTimes[str(timeSeconds)]=voteTime
-              voteTimesOrder.append(str(timeSeconds))
+        (ts,te,timeLastVote)=self.checkLine(linePrev,lineCur,lineNext,ts,te,
+          timeLastVote,voteTimes,voteTimesOrder)
+      
+      linePrev=lineCur
+      lineCur=lineNext
+      lineNext=""
+      self.checkLine(linePrev,lineCur,lineNext,ts,te,timeLastVote,voteTimes,
+        voteTimesOrder)
   def getCurrentVideo(self):
     if self.currentVideo==None:
       #assert self.hasUnprocessedVideos()
@@ -317,6 +345,8 @@ class MainWindow(qtw.QMainWindow):
     
     self.match=qtw.QLabel()
     topLayout.addWidget(self.match)
+    self.line=qtw.QLabel()
+    topLayout.addWidget(self.line)
     
     self.videoLink=qtw.QLabel()
     self.videoLink.setOpenExternalLinks(True)
@@ -374,8 +404,13 @@ class MainWindow(qtw.QMainWindow):
     
     self.motionLink=qtw.QLineEdit()
     self.motionLink.setStyleSheet(backGroundStyle)
-    self.motionLink.setPlaceholderText("Paste link to motion")
+    self.motionLink.setPlaceholderText("Paste link to agenda item")
     topLayout.addWidget(self.motionLink)
+    
+    self.motionTitle=qtw.QLineEdit()
+    self.motionTitle.setStyleSheet(backGroundStyle)
+    self.motionTitle.setPlaceholderText("Motion title")
+    topLayout.addWidget(self.motionTitle)
     
     layoutNewTime=qtw.QHBoxLayout()
     newTimePrompt=qtw.QLabel("Update time:")
@@ -407,42 +442,56 @@ class MainWindow(qtw.QMainWindow):
     
     self.centralWidget.addWidget(self.addVotewidget)
   def updateAddVoteWidget(self):
+    
+    hadVoteTime=False
     if self.currentVideo!=None:
+      
       video=self.database["videos"][self.currentVideo]
-      voteTime=video["voteTimes"][str(self.currentTime)]
-      timeDict=voteTime["time"]
-      t=getTotalSeconds(timeDict)
-      matchWord=voteTime["wordMatched"]
-      url=self.currentVideo+"?t="+str(t)
-      timeIndex=video["voteTimesOrder"].index(self.currentTime)
-      progress=str(timeIndex+1)+"/"+str(len(video["voteTimes"]))
-      videoTime=str(timeDict["h"])+":"+str(timeDict["m"])+":"+str(timeDict["s"])
-      if timeIndex<len(video["voteTimes"])-1:
-        nextTimeSeconds=video["voteTimesOrder"][timeIndex+1]
-        nextTimeDict=video["voteTimes"][nextTimeSeconds]["time"]
-        nextVideoTime=str(nextTimeDict["h"])+":"+\
-          str(nextTimeDict["m"])+":"+str(nextTimeDict["s"])
-    else:
+      
+      if not (str(self.currentTime) in video["voteTimes"].keys()):
+        self.incrementCurrentTimeIndex()
+      
+      if self.currentVideo!=None:
+        video=self.database["videos"][self.currentVideo]
+          
+        hadVoteTime=True
+        voteTime=video["voteTimes"][str(self.currentTime)]
+        timeDict=voteTime["time"]
+        t=getTotalSeconds(timeDict)
+        matchWord=voteTime["wordMatched"]
+        matchedLinePrev=voteTime["matchedLinePrev"]
+        matchedLineCur=voteTime["matchedLineCur"]
+        matchedLineNext=voteTime["matchedLineNext"]
+        url=self.currentVideo+"?t="+str(t)
+        timeIndex=video["voteTimesOrder"].index(self.currentTime)
+        progress=str(timeIndex+1)+"/"+str(len(video["voteTimes"]))
+        videoTime=str(timeDict["h"])+":"+str(timeDict["m"])+":"+str(timeDict["s"])
+        if timeIndex<len(video["voteTimes"])-1:
+          nextTimeSeconds=video["voteTimesOrder"][timeIndex+1]
+          nextTimeDict=video["voteTimes"][nextTimeSeconds]["time"]
+          nextVideoTime=str(nextTimeDict["h"])+":"+\
+            str(nextTimeDict["m"])+":"+str(nextTimeDict["s"])
+    if not hadVoteTime:
       url=""
       matchWord=""
       videoTime=""
       nextVideoTime=""
-    self.match.setText("Matched: "+matchWord)
+    self.match.setText("Matched: \""+matchWord+"\"")
+    self.line.setText("In lines: \""+matchedLinePrev+matchedLineCur+matchedLineNext+"\"")
     self.videoLink.setText("URL at match: <a href='"+url+"'>"+url+"</a>")
     self.progress.setText(progress)
     self.newVideoTime.setText(videoTime)
     self.nextEventTime.setText("Next event time: "+nextVideoTime)
   def addVoteClicked(self):
     
-    if "votes" in self.database.keys():
-      votes=self.database["votes"]
+    if "motions" in self.database.keys():
+      motions=self.database["motions"]
     else:
-      self.database["votes"]=[]
-      votes=self.database["votes"]
+      self.database["motions"]={}
+      motions=self.database["motions"]
     
     #print()
     #print("-----------------------")
-    vote={"video":self.currentVideo}
     councilorVotes=[]
     for councilor in self.councilorVotes.keys():
       
@@ -462,15 +511,21 @@ class MainWindow(qtw.QMainWindow):
     newVoteTime["time"]=newTimeDict
     video["voteTimes"].pop(self.currentTime)
     video["voteTimes"][newTimeSecondsTotal]=newVoteTime
+    
     self.currentTime=newTimeSecondsTotal
     video["voteTimesOrder"][currentTimeIndex]=newTimeSecondsTotal
     
-    vote["councilorVotes"]=councilorVotes
+    motionID=self.getNewMotionID()
+    video["voteTimes"][newTimeSecondsTotal]["motion"]=motionID
+    motion={"video":self.currentVideo,"voteTime":newTimeSecondsTotal}
+    motion["councilorVotes"]=councilorVotes
     #print(self.motionLink.text())
     #print(self.newVideoTime.text())
-    vote["motionLink"]=self.motionLink.text()
-    votes.append(vote)
+    motion["agendaLink"]=self.motionLink.text()
+    motion["title"]=self.motionTitle.text()
+    motions[motionID]=motion
     self.motionLink.setText("")
+    self.motionTitle.setText("")
     self.incrementCurrentTimeIndex()
     self.updateAddVoteWidget()
   def skipClicked(self):
@@ -488,6 +543,10 @@ class MainWindow(qtw.QMainWindow):
     del video["voteTimesOrder"][currentTimeIndex]
     
     self.updateAddVoteWidget()
+  def getNewMotionID(self):
+    nextID=self.database["nextMotionID"]
+    self.database["nextMotionID"]+=1
+    return nextID
   def incrementCurrentTimeIndex(self):
     
     video=self.database["videos"][self.currentVideo]
@@ -547,7 +606,7 @@ class MainWindow(qtw.QMainWindow):
       self.showStatusMessage("The entered url=\""+text+
         "\" doesn't look like a url, try adding a video url again")
   def loadDatabase(self):
-    self.databaseFileName="database.json"
+    self.databaseFileName="../data/database.json"
     try:
       file=open(self.databaseFileName,"r")
       self.database=json.load(file)
@@ -579,13 +638,18 @@ class MainWindow(qtw.QMainWindow):
         15:{"name":"Trish Purdy"},
         16:{"name":"Laura White"}
         },
-      "matchWords":["[ Voting in Progress ]","vote","recorded vote"],
-      "voteTags:":["Consent Agenda","Transportation"],
+      "matchWords":["[ Voting in Progress ]",
+                    "vote",
+                    "carries","approved","passes","fails"
+                    ],
       "currentVideo":None,
-      "currentTime":None
+      "currentTime":None,
+      "nextMotionID":0,
+      "nextCouncilorID":17,
+      "minSecondsBetweenVoteEvents":30
     }
   def writeDatabase(self):
-    file=open("database.json",'w')
+    file=open("../data/database.json",'w')
     json.dump(self.database,file,indent=2)
 def main():
   

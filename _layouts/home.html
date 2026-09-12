@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<meta charset="UTF-8">
+<title>{{site.title}}</title>
+<head>
+</head>
+<body>
+
+<p id="demo"></p>
+<div id="test"></div>
+
+<link href="assets/css/jsonview.css" rel="stylesheet" />
+<script  type="text/javascript" src="assets/js/jsonview.umd.js"></script>
+
+<script>
+async function loadDatabase(dataBasePath) {
+  try {
+    
+    const response = await fetch(dataBasePath);
+    
+    if (!response.ok) {
+      
+      throw new Error("HTTP error " + response.status);
+    }
+    
+    let dataBase = await response.json();
+    
+    return dataBase;
+  }
+  catch(err) {
+    
+    document.getElementById("demo").textContent = err.message;
+  }
+}
+function displaDatabase(dataBase){
+  
+  //document.getElementById("test").appendChild(renderjson(dataBase));
+  //document.getElementById("test").appendChild(renderjson(dataBase));
+  
+  const tree = jsonview.create(dataBase);
+  jsonview.render(tree, document.querySelector("#test"));
+  
+}
+function displayMotions(dataBase){
+  
+  document.getElementById("demo").textContent =
+  JSON.stringify(dataBase);
+}
+
+async function main(){
+  
+  let dataBase=await loadDatabase("./data/database.json");
+  displaDatabase(dataBase);
+  
+}
+
+main();
+
+</script>
+
+{{content}}
+
+</body>
+</html>

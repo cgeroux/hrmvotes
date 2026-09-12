@@ -1,0 +1,1198 @@
+{
+  "councilors": {
+    "0": {
+      "name": "Sam Austin"
+    },
+    "1": {
+      "name": "Shawn Cleary"
+    },
+    "2": {
+      "name": "Patty Cuttell"
+    },
+    "3": {
+      "name": "Cathy Deagle Gammon"
+    },
+    "4": {
+      "name": "Andy Fillmore"
+    },
+    "5": {
+      "name": "Billy Gillis"
+    },
+    "6": {
+      "name": "Nancy Hartling"
+    },
+    "7": {
+      "name": "David Hendsbee"
+    },
+    "8": {
+      "name": "Virgina Hinch"
+    },
+    "9": {
+      "name": "Becky Kent"
+    },
+    "10": {
+      "name": "Tony Mancini"
+    },
+    "11": {
+      "name": "Kathryn Morse"
+    },
+    "12": {
+      "name": "Jean St-Amand"
+    },
+    "13": {
+      "name": "Janet Steele"
+    },
+    "14": {
+      "name": "John Young"
+    },
+    "15": {
+      "name": "Trish Purdy"
+    },
+    "16": {
+      "name": "Laura White"
+    }
+  },
+  "matchWords": [
+    "[ Voting in Progress ]",
+    "vote",
+    "carries",
+    "approved",
+    "passes",
+    "fails"
+  ],
+  "currentVideo": "https://www.youtube.com/live/VxEmLK7FeJY",
+  "currentTime": "11939",
+  "nextMotionID": 9,
+  "nextCouncilorID": 17,
+  "minSecondsBetweenVoteEvents": 30,
+  "videos": {
+    "https://www.youtube.com/live/VxEmLK7FeJY": {
+      "status": "unprocessed",
+      "date": {
+        "year": 2026,
+        "month": 8,
+        "day": 25
+      },
+      "subtitleFile": "temp.en.vtt",
+      "voteTimes": {
+        "11939": {
+          "time": {
+            "h": 3,
+            "m": 18,
+            "s": 59
+          },
+          "wordMatched": "vote",
+          "matchedLinePrev": " \n",
+          "matchedLineCur": "We uh how we doing on the vote there,",
+          "matchedLineNext": "\n"
+        },
+        "11974": {
+          "time": {
+            "h": 3,
+            "m": 19,
+            "s": 34
+          },
+          "wordMatched": "vote",
+          "matchedLinePrev": "And just Mr. Mayor, we would like to\n",
+          "matchedLineCur": "know councelor Austin's vote is also a",
+          "matchedLineNext": "\n"
+        },
+        "12242": {
+          "time": {
+            "h": 3,
+            "m": 24,
+            "s": 2
+          },
+          "wordMatched": "approved",
+          "matchedLinePrev": "before us today from CPED was not\n",
+          "matchedLineCur": "unanimously approved by CPED for this",
+          "matchedLineNext": "\n"
+        },
+        "12301": {
+          "time": {
+            "h": 3,
+            "m": 25,
+            "s": 1
+          },
+          "wordMatched": "approved",
+          "matchedLinePrev": "into the planning and development budget\n",
+          "matchedLineCur": "as council approved positions. In a",
+          "matchedLineNext": "\n"
+        },
+        "12483": {
+          "time": {
+            "h": 3,
+            "m": 28,
+            "s": 3
+          },
+          "wordMatched": "vote",
+          "matchedLinePrev": "asked at CPED uh for this to be broken\n",
+          "matchedLineCur": "out so we could vote on the the points",
+          "matchedLineNext": "\n"
+        },
+        "12572": {
+          "time": {
+            "h": 3,
+            "m": 29,
+            "s": 32
+          },
+          "wordMatched": "approved",
+          "matchedLinePrev": "ratification day a motion that council\n",
+          "matchedLineCur": "approved right for staff to go away",
+          "matchedLineNext": "\n"
+        },
+        "12704": {
+          "time": {
+            "h": 3,
+            "m": 31,
+            "s": 44
+          },
+          "wordMatched": "vote",
+          "matchedLinePrev": "asked this question is um at CPAD last\n",
+          "matchedLineCur": "week, I voted against uh uh clause two",
+          "matchedLineNext": "\n"
+        },
+        "13313": {
+          "time": {
+            "h": 3,
+            "m": 41,
+            "s": 53
+          },
+          "wordMatched": "vote",
+          "matchedLinePrev": "to be more seamless. So, um I at I'll\n",
+          "matchedLineCur": "vote for the original motion because I",
+          "matchedLineNext": "\n"
+        },
+        "13418": {
+          "time": {
+            "h": 3,
+            "m": 43,
+            "s": 38
+          },
+          "wordMatched": "approved",
+          "matchedLinePrev": "community in Spryfield, I had over 26\n",
+          "matchedLineCur": "projects through half approved through",
+          "matchedLineNext": "\n"
+        },
+        "13749": {
+          "time": {
+            "h": 3,
+            "m": 49,
+            "s": 9
+          },
+          "wordMatched": "vote",
+          "matchedLinePrev": "Thank you. Yeah, that's correct. if if\n",
+          "matchedLineCur": "if you voted for the original motion,",
+          "matchedLineNext": "\n"
+        },
+        "13966": {
+          "time": {
+            "h": 3,
+            "m": 52,
+            "s": 46
+          },
+          "wordMatched": "vote",
+          "matchedLinePrev": "called. We have no more speakers on the\n",
+          "matchedLineCur": "list. Uh the vote will be on the motion",
+          "matchedLineNext": "\n"
+        },
+        "14006": {
+          "time": {
+            "h": 3,
+            "m": 53,
+            "s": 26
+          },
+          "wordMatched": "fails",
+          "matchedLinePrev": " \n",
+          "matchedLineCur": "&gt;&gt; It's a tie vote. So that fails. So the",
+          "matchedLineNext": "\n"
+        },
+        "14178": {
+          "time": {
+            "h": 3,
+            "m": 56,
+            "s": 18
+          },
+          "wordMatched": "vote",
+          "matchedLinePrev": "funding. I think it's a fantastic\n",
+          "matchedLineCur": "strategy, but I want I wish to vote",
+          "matchedLineNext": "\n"
+        },
+        "14282": {
+          "time": {
+            "h": 3,
+            "m": 58,
+            "s": 2
+          },
+          "wordMatched": "vote",
+          "matchedLinePrev": "um I'm going to ask also if we can do\n",
+          "matchedLineCur": "what we did at CPED and vote on these",
+          "matchedLineNext": "\n"
+        },
+        "15293": {
+          "time": {
+            "h": 4,
+            "m": 14,
+            "s": 53
+          },
+          "wordMatched": "vote",
+          "matchedLinePrev": "&gt;&gt; Okay, questions being called and we'll\n",
+          "matchedLineCur": "vote first on one and three. And",
+          "matchedLineNext": "\n"
+        },
+        "15342": {
+          "time": {
+            "h": 4,
+            "m": 15,
+            "s": 42
+          },
+          "wordMatched": "passes",
+          "matchedLinePrev": " \n",
+          "matchedLineCur": "Right. And that passes.",
+          "matchedLineNext": "\n"
+        },
+        "15529": {
+          "time": {
+            "h": 4,
+            "m": 18,
+            "s": 49
+          },
+          "wordMatched": "approved",
+          "matchedLinePrev": "questions about priorities. Um, one of\n",
+          "matchedLineCur": "the strategies we approved was the HRM",
+          "matchedLineNext": "\n"
+        },
+        "15565": {
+          "time": {
+            "h": 4,
+            "m": 19,
+            "s": 25
+          },
+          "wordMatched": "approved",
+          "matchedLinePrev": "washroom and drinking fountain strategy\n",
+          "matchedLineCur": "which was approved in 2020 and um to get",
+          "matchedLineNext": "\n"
+        },
+        "15661": {
+          "time": {
+            "h": 4,
+            "m": 21,
+            "s": 1
+          },
+          "wordMatched": "approved",
+          "matchedLinePrev": "the HRM washrooms and drinking fountain\n",
+          "matchedLineCur": "strategy approved by regional council in",
+          "matchedLineNext": "\n"
+        },
+        "16038": {
+          "time": {
+            "h": 4,
+            "m": 27,
+            "s": 18
+          },
+          "wordMatched": "carries",
+          "matchedLinePrev": " \n",
+          "matchedLineCur": "The motion carries. So that brings us to",
+          "matchedLineNext": "\n"
+        },
+        "17352": {
+          "time": {
+            "h": 4,
+            "m": 49,
+            "s": 12
+          },
+          "wordMatched": "vote",
+          "matchedLinePrev": "for me I I have much more confidence in\n",
+          "matchedLineCur": "in putting my uh vote behind things",
+          "matchedLineNext": "\n"
+        },
+        "18768": {
+          "time": {
+            "h": 5,
+            "m": 12,
+            "s": 48
+          },
+          "wordMatched": "passes",
+          "matchedLinePrev": " \n",
+          "matchedLineCur": "All right. So, that motion passes. Um,",
+          "matchedLineNext": "\n"
+        },
+        "19062": {
+          "time": {
+            "h": 5,
+            "m": 17,
+            "s": 42
+          },
+          "wordMatched": "carries",
+          "matchedLinePrev": " \n",
+          "matchedLineCur": "and the motion carries. Thank you very",
+          "matchedLineNext": "\n"
+        },
+        "24713": {
+          "time": {
+            "h": 6,
+            "m": 51,
+            "s": 53
+          },
+          "wordMatched": "vote",
+          "matchedLinePrev": " \n",
+          "matchedLineCur": "colleagues, this is a digital vote.",
+          "matchedLineNext": "\n"
+        },
+        "24800": {
+          "time": {
+            "h": 6,
+            "m": 53,
+            "s": 20
+          },
+          "wordMatched": "carries",
+          "matchedLinePrev": " \n",
+          "matchedLineCur": "&gt;&gt; And the motion carries. Thank you. This",
+          "matchedLineNext": "\n"
+        },
+        "24836": {
+          "time": {
+            "h": 6,
+            "m": 53,
+            "s": 56
+          },
+          "wordMatched": "vote",
+          "matchedLinePrev": "&gt;&gt; Seconded by Councelor Hensby. And we\n",
+          "matchedLineCur": "will go to the digital vote.",
+          "matchedLineNext": "\n"
+        },
+        "24878": {
+          "time": {
+            "h": 6,
+            "m": 54,
+            "s": 38
+          },
+          "wordMatched": "vote",
+          "matchedLinePrev": "&gt;&gt; That seconded by councelor Hensby and\n",
+          "matchedLineCur": "we'll go to the digital vote",
+          "matchedLineNext": "\n"
+        },
+        "2365": {
+          "time": {
+            "h": 0,
+            "m": 39,
+            "s": 25
+          },
+          "wordMatched": "vote",
+          "matchedLinePrev": "will I'll seek your guidance on if we're\n",
+          "matchedLineCur": "going to have a hand vote on this or how",
+          "matchedLineNext": "\n",
+          "motion": 0
+        },
+        "2446": {
+          "time": {
+            "h": 0,
+            "m": 40,
+            "s": 46
+          },
+          "wordMatched": "vote",
+          "matchedLinePrev": "Steel. And we will go to a recorded\n",
+          "matchedLineCur": "vote.",
+          "matchedLineNext": "\n",
+          "motion": 1
+        },
+        "5679": {
+          "time": {
+            "h": 1,
+            "m": 34,
+            "s": 39
+          },
+          "wordMatched": "carries",
+          "matchedLinePrev": " \n",
+          "matchedLineCur": "[snorts] and the motion carries. Thank",
+          "matchedLineNext": "\n",
+          "motion": 2
+        },
+        "6831": {
+          "time": {
+            "h": 1,
+            "m": 53,
+            "s": 51
+          },
+          "wordMatched": "fails",
+          "matchedLinePrev": " \n",
+          "matchedLineCur": "Part two fails.",
+          "matchedLineNext": "\n",
+          "motion": 4
+        },
+        "7018": {
+          "time": {
+            "h": 1,
+            "m": 56,
+            "s": 58
+          },
+          "wordMatched": "vote",
+          "matchedLinePrev": "else on the board shall we proceed to\n",
+          "matchedLineCur": "the vote",
+          "matchedLineNext": "\n",
+          "motion": 5
+        },
+        "7137": {
+          "time": {
+            "h": 1,
+            "m": 58,
+            "s": 57
+          },
+          "wordMatched": "vote",
+          "matchedLinePrev": "&gt;&gt; Seconded by councelor Kent\n",
+          "matchedLineCur": "and this will be a digital vote.",
+          "matchedLineNext": "\n",
+          "motion": 6
+        },
+        "8357": {
+          "time": {
+            "h": 2,
+            "m": 19,
+            "s": 17
+          },
+          "wordMatched": "carries",
+          "matchedLinePrev": " \n",
+          "matchedLineCur": "And the motion carries. Um, we are at",
+          "matchedLineNext": "\n",
+          "motion": 7
+        },
+        "11972": {
+          "time": {
+            "h": 3,
+            "m": 19,
+            "s": 32
+          },
+          "wordMatched": "vote",
+          "matchedLinePrev": "&gt;&gt; call the question is called. We'll go to\n",
+          "matchedLineCur": "the electronic vote.",
+          "matchedLineNext": "\n",
+          "motion": 8
+        }
+      },
+      "voteTimesOrder": [
+        "2365",
+        "2446",
+        "5679",
+        "6797",
+        "6831",
+        "7018",
+        "7137",
+        "8357",
+        "11972",
+        "11939",
+        "11974",
+        "12242",
+        "12301",
+        "12483",
+        "12572",
+        "12704",
+        "13313",
+        "13418",
+        "13749",
+        "13966",
+        "14006",
+        "14178",
+        "14282",
+        "15293",
+        "15342",
+        "15529",
+        "15565",
+        "15661",
+        "16038",
+        "17352",
+        "18768",
+        "19062",
+        "24713",
+        "24800",
+        "24836",
+        "24878"
+      ]
+    }
+  },
+  "motions": {
+    "0": {
+      "video": "https://www.youtube.com/live/VxEmLK7FeJY",
+      "voteTime": "2365",
+      "councilorVotes": [
+        [
+          "Sam Austin",
+          "yes"
+        ],
+        [
+          "Shawn Cleary",
+          "yes"
+        ],
+        [
+          "Patty Cuttell",
+          "yes"
+        ],
+        [
+          "Cathy Deagle Gammon",
+          "yes"
+        ],
+        [
+          "Andy Fillmore",
+          "yes"
+        ],
+        [
+          "Billy Gillis",
+          "yes"
+        ],
+        [
+          "Nancy Hartling",
+          "yes"
+        ],
+        [
+          "David Hendsbee",
+          "yes"
+        ],
+        [
+          "Virgina Hinch",
+          "yes"
+        ],
+        [
+          "Becky Kent",
+          "yes"
+        ],
+        [
+          "Tony Mancini",
+          "yes"
+        ],
+        [
+          "Kathryn Morse",
+          "yes"
+        ],
+        [
+          "Jean St-Amand",
+          "yes"
+        ],
+        [
+          "Janet Steele",
+          "yes"
+        ],
+        [
+          "John Young",
+          "yes"
+        ],
+        [
+          "Trish Purdy",
+          "absent"
+        ],
+        [
+          "Laura White",
+          "absent"
+        ]
+      ],
+      "agendaLink": "https://pub-halifax.escribemeetings.com/Meeting.aspx?Id=7ec924d6-96b8-4dec-b65a-d1d6ce3e43fa&Agenda=Agenda&lang=English&Item=34&Tab=attachments",
+      "title": "Intergovernmental relations"
+    },
+    "1": {
+      "video": "https://www.youtube.com/live/VxEmLK7FeJY",
+      "voteTime": "2446",
+      "councilorVotes": [
+        [
+          "Sam Austin",
+          "yes"
+        ],
+        [
+          "Shawn Cleary",
+          "yes"
+        ],
+        [
+          "Patty Cuttell",
+          "yes"
+        ],
+        [
+          "Cathy Deagle Gammon",
+          "yes"
+        ],
+        [
+          "Andy Fillmore",
+          "yes"
+        ],
+        [
+          "Billy Gillis",
+          "yes"
+        ],
+        [
+          "Nancy Hartling",
+          "yes"
+        ],
+        [
+          "David Hendsbee",
+          "yes"
+        ],
+        [
+          "Virgina Hinch",
+          "yes"
+        ],
+        [
+          "Becky Kent",
+          "yes"
+        ],
+        [
+          "Tony Mancini",
+          "yes"
+        ],
+        [
+          "Kathryn Morse",
+          "yes"
+        ],
+        [
+          "Jean St-Amand",
+          "yes"
+        ],
+        [
+          "Janet Steele",
+          "yes"
+        ],
+        [
+          "John Young",
+          "yes"
+        ],
+        [
+          "Trish Purdy",
+          "absent"
+        ],
+        [
+          "Laura White",
+          "absent"
+        ]
+      ],
+      "agendaLink": "https://pub-halifax.escribemeetings.com/Meeting.aspx?Id=7ec924d6-96b8-4dec-b65a-d1d6ce3e43fa&Agenda=Agenda&lang=English&Item=6&Tab=attachments",
+      "title": "Consent Agenda"
+    },
+    "2": {
+      "video": "https://www.youtube.com/live/VxEmLK7FeJY",
+      "voteTime": "5679",
+      "councilorVotes": [
+        [
+          "Sam Austin",
+          "yes"
+        ],
+        [
+          "Shawn Cleary",
+          "yes"
+        ],
+        [
+          "Patty Cuttell",
+          "yes"
+        ],
+        [
+          "Cathy Deagle Gammon",
+          "yes"
+        ],
+        [
+          "Andy Fillmore",
+          "yes"
+        ],
+        [
+          "Billy Gillis",
+          "yes"
+        ],
+        [
+          "Nancy Hartling",
+          "yes"
+        ],
+        [
+          "David Hendsbee",
+          "yes"
+        ],
+        [
+          "Virgina Hinch",
+          "yes"
+        ],
+        [
+          "Becky Kent",
+          "yes"
+        ],
+        [
+          "Tony Mancini",
+          "yes"
+        ],
+        [
+          "Kathryn Morse",
+          "yes"
+        ],
+        [
+          "Jean St-Amand",
+          "yes"
+        ],
+        [
+          "Janet Steele",
+          "yes"
+        ],
+        [
+          "John Young",
+          "yes"
+        ],
+        [
+          "Trish Purdy",
+          "absent"
+        ],
+        [
+          "Laura White",
+          "absent"
+        ]
+      ],
+      "agendaLink": "https://pub-halifax.escribemeetings.com/Meeting.aspx?Id=7ec924d6-96b8-4dec-b65a-d1d6ce3e43fa&Agenda=Agenda&lang=English&Item=36&Tab=attachments",
+      "title": "Dismantling Racism and Hate Strategy"
+    },
+    "3": {
+      "video": "https://www.youtube.com/live/VxEmLK7FeJY",
+      "voteTime": "6797",
+      "councilorVotes": [
+        [
+          "Sam Austin",
+          "yes"
+        ],
+        [
+          "Shawn Cleary",
+          "yes"
+        ],
+        [
+          "Patty Cuttell",
+          "yes"
+        ],
+        [
+          "Cathy Deagle Gammon",
+          "yes"
+        ],
+        [
+          "Andy Fillmore",
+          "yes"
+        ],
+        [
+          "Billy Gillis",
+          "yes"
+        ],
+        [
+          "Nancy Hartling",
+          "yes"
+        ],
+        [
+          "David Hendsbee",
+          "yes"
+        ],
+        [
+          "Virgina Hinch",
+          "yes"
+        ],
+        [
+          "Becky Kent",
+          "yes"
+        ],
+        [
+          "Tony Mancini",
+          "yes"
+        ],
+        [
+          "Kathryn Morse",
+          "yes"
+        ],
+        [
+          "Jean St-Amand",
+          "yes"
+        ],
+        [
+          "Janet Steele",
+          "yes"
+        ],
+        [
+          "John Young",
+          "yes"
+        ],
+        [
+          "Trish Purdy",
+          "absent"
+        ],
+        [
+          "Laura White",
+          "absent"
+        ]
+      ],
+      "agendaLink": "https://pub-halifax.escribemeetings.com/Meeting.aspx?Id=7ec924d6-96b8-4dec-b65a-d1d6ce3e43fa&Agenda=Agenda&lang=English&Item=37&Tab=attachments",
+      "title": "Part 1 - CA147 Street Renamings"
+    },
+    "4": {
+      "video": "https://www.youtube.com/live/VxEmLK7FeJY",
+      "voteTime": "6831",
+      "councilorVotes": [
+        [
+          "Sam Austin",
+          "no"
+        ],
+        [
+          "Shawn Cleary",
+          "no"
+        ],
+        [
+          "Patty Cuttell",
+          "no"
+        ],
+        [
+          "Cathy Deagle Gammon",
+          "no"
+        ],
+        [
+          "Andy Fillmore",
+          "no"
+        ],
+        [
+          "Billy Gillis",
+          "no"
+        ],
+        [
+          "Nancy Hartling",
+          "no"
+        ],
+        [
+          "David Hendsbee",
+          "no"
+        ],
+        [
+          "Virgina Hinch",
+          "no"
+        ],
+        [
+          "Becky Kent",
+          "no"
+        ],
+        [
+          "Tony Mancini",
+          "no"
+        ],
+        [
+          "Kathryn Morse",
+          "no"
+        ],
+        [
+          "Jean St-Amand",
+          "no"
+        ],
+        [
+          "Janet Steele",
+          "no"
+        ],
+        [
+          "John Young",
+          "no"
+        ],
+        [
+          "Trish Purdy",
+          "absent"
+        ],
+        [
+          "Laura White",
+          "absent"
+        ]
+      ],
+      "agendaLink": "https://pub-halifax.escribemeetings.com/Meeting.aspx?Id=7ec924d6-96b8-4dec-b65a-d1d6ce3e43fa&Agenda=Agenda&lang=English&Item=37&Tab=attachments",
+      "title": "Proposed Amendments to AO 29 - CA147 Street Renamings"
+    },
+    "5": {
+      "video": "https://www.youtube.com/live/VxEmLK7FeJY",
+      "voteTime": "7018",
+      "councilorVotes": [
+        [
+          "Sam Austin",
+          "yes"
+        ],
+        [
+          "Shawn Cleary",
+          "yes"
+        ],
+        [
+          "Patty Cuttell",
+          "yes"
+        ],
+        [
+          "Cathy Deagle Gammon",
+          "yes"
+        ],
+        [
+          "Andy Fillmore",
+          "yes"
+        ],
+        [
+          "Billy Gillis",
+          "yes"
+        ],
+        [
+          "Nancy Hartling",
+          "yes"
+        ],
+        [
+          "David Hendsbee",
+          "yes"
+        ],
+        [
+          "Virgina Hinch",
+          "yes"
+        ],
+        [
+          "Becky Kent",
+          "yes"
+        ],
+        [
+          "Tony Mancini",
+          "yes"
+        ],
+        [
+          "Kathryn Morse",
+          "yes"
+        ],
+        [
+          "Jean St-Amand",
+          "yes"
+        ],
+        [
+          "Janet Steele",
+          "yes"
+        ],
+        [
+          "John Young",
+          "yes"
+        ],
+        [
+          "Trish Purdy",
+          "absent"
+        ],
+        [
+          "Laura White",
+          "absent"
+        ]
+      ],
+      "agendaLink": "https://pub-halifax.escribemeetings.com/Meeting.aspx?Id=7ec924d6-96b8-4dec-b65a-d1d6ce3e43fa&Agenda=Agenda&lang=English&Item=37&Tab=attachments",
+      "title": "CA147 Street Renamings Alternative"
+    },
+    "6": {
+      "video": "https://www.youtube.com/live/VxEmLK7FeJY",
+      "voteTime": "7137",
+      "councilorVotes": [
+        [
+          "Sam Austin",
+          "yes"
+        ],
+        [
+          "Shawn Cleary",
+          "yes"
+        ],
+        [
+          "Patty Cuttell",
+          "yes"
+        ],
+        [
+          "Cathy Deagle Gammon",
+          "yes"
+        ],
+        [
+          "Andy Fillmore",
+          "yes"
+        ],
+        [
+          "Billy Gillis",
+          "yes"
+        ],
+        [
+          "Nancy Hartling",
+          "yes"
+        ],
+        [
+          "David Hendsbee",
+          "yes"
+        ],
+        [
+          "Virgina Hinch",
+          "yes"
+        ],
+        [
+          "Becky Kent",
+          "yes"
+        ],
+        [
+          "Tony Mancini",
+          "yes"
+        ],
+        [
+          "Kathryn Morse",
+          "yes"
+        ],
+        [
+          "Jean St-Amand",
+          "yes"
+        ],
+        [
+          "Janet Steele",
+          "yes"
+        ],
+        [
+          "John Young",
+          "yes"
+        ],
+        [
+          "Trish Purdy",
+          "absent"
+        ],
+        [
+          "Laura White",
+          "absent"
+        ]
+      ],
+      "agendaLink": "https://pub-halifax.escribemeetings.com/Meeting.aspx?Id=7ec924d6-96b8-4dec-b65a-d1d6ce3e43fa&Agenda=Agenda&lang=English&Item=61&Tab=attachments",
+      "title": "Intergovernmental relations"
+    },
+    "7": {
+      "video": "https://www.youtube.com/live/VxEmLK7FeJY",
+      "voteTime": "8357",
+      "councilorVotes": [
+        [
+          "Sam Austin",
+          "yes"
+        ],
+        [
+          "Shawn Cleary",
+          "yes"
+        ],
+        [
+          "Patty Cuttell",
+          "yes"
+        ],
+        [
+          "Cathy Deagle Gammon",
+          "yes"
+        ],
+        [
+          "Andy Fillmore",
+          "no"
+        ],
+        [
+          "Billy Gillis",
+          "yes"
+        ],
+        [
+          "Nancy Hartling",
+          "yes"
+        ],
+        [
+          "David Hendsbee",
+          "yes"
+        ],
+        [
+          "Virgina Hinch",
+          "yes"
+        ],
+        [
+          "Becky Kent",
+          "yes"
+        ],
+        [
+          "Tony Mancini",
+          "yes"
+        ],
+        [
+          "Kathryn Morse",
+          "yes"
+        ],
+        [
+          "Jean St-Amand",
+          "yes"
+        ],
+        [
+          "Janet Steele",
+          "yes"
+        ],
+        [
+          "John Young",
+          "yes"
+        ],
+        [
+          "Trish Purdy",
+          "absent"
+        ],
+        [
+          "Laura White",
+          "absent"
+        ]
+      ],
+      "agendaLink": "https://pub-halifax.escribemeetings.com/Meeting.aspx?Id=7ec924d6-96b8-4dec-b65a-d1d6ce3e43fa&Agenda=Agenda&lang=English&Item=69&Tab=attachments",
+      "title": "Coastal Buffers"
+    },
+    "8": {
+      "video": "https://www.youtube.com/live/VxEmLK7FeJY",
+      "voteTime": "11972",
+      "councilorVotes": [
+        [
+          "Sam Austin",
+          "yes"
+        ],
+        [
+          "Shawn Cleary",
+          "yes"
+        ],
+        [
+          "Patty Cuttell",
+          "yes"
+        ],
+        [
+          "Cathy Deagle Gammon",
+          "yes"
+        ],
+        [
+          "Andy Fillmore",
+          "yes"
+        ],
+        [
+          "Billy Gillis",
+          "yes"
+        ],
+        [
+          "Nancy Hartling",
+          "yes"
+        ],
+        [
+          "David Hendsbee",
+          "yes"
+        ],
+        [
+          "Virgina Hinch",
+          "yes"
+        ],
+        [
+          "Becky Kent",
+          "yes"
+        ],
+        [
+          "Tony Mancini",
+          "yes"
+        ],
+        [
+          "Kathryn Morse",
+          "yes"
+        ],
+        [
+          "Jean St-Amand",
+          "yes"
+        ],
+        [
+          "Janet Steele",
+          "yes"
+        ],
+        [
+          "John Young",
+          "absent"
+        ],
+        [
+          "Trish Purdy",
+          "absent"
+        ],
+        [
+          "Laura White",
+          "absent"
+        ]
+      ],
+      "agendaLink": "https://pub-halifax.escribemeetings.com/Meeting.aspx?Id=7ec924d6-96b8-4dec-b65a-d1d6ce3e43fa&Agenda=Agenda&lang=English&Item=47&Tab=attachments",
+      "title": "Proposed Amendments to Administrative Order Twenty-Nine, Respecting HRM Civic Addressing Policies - CA148"
+    }
+  }
+}
