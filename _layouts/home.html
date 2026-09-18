@@ -2,61 +2,230 @@
 <html lang="en">
 <meta charset="UTF-8">
 <title>{{site.title}}</title>
+<style>
+table{
+  border-collapse: collapse;
+}
+td{
+  border: 1px solid black;
+}
+</style>
 <head>
 </head>
 <body>
 
 <p id="demo"></p>
-<div id="test"></div>
-
-<link href="assets/css/jsonview.css" rel="stylesheet" />
-<script  type="text/javascript" src="assets/js/jsonview.umd.js"></script>
 
 <script>
-async function loadDatabase(dataBasePath) {
-  try {
+
+let context={baseURL:"https://hrm.datasette.danp.net/meetings.json?sql="};
+
+function main(){
+  
+  context.voteStrings=new Map();
+  context.voteStrings.set("against","no");
+  context.voteStrings.set("in_favour","yes");
+  context.voteStrings.set("not_present","absent");
+}
+
+async function performQuery(query){
+  
+  const url=context.baseURL+encodeURIComponent(query);
+  let result=null;
+  try{
     
-    const response = await fetch(dataBasePath);
-    
-    if (!response.ok) {
+    const response=await fetch(url);
+    if (!response.ok){
       
-      throw new Error("HTTP error " + response.status);
+      throw new Error(`Response status: ${response.status}`);
     }
     
-    let dataBase = await response.json();
-    
-    return dataBase;
+    result=await response.json();
   }
-  catch(err) {
+  catch (error){
     
-    document.getElementById("demo").textContent = err.message;
+    console.error(error.message);
   }
-}
-function displaDatabase(dataBase){
   
-  //document.getElementById("test").appendChild(renderjson(dataBase));
-  //document.getElementById("test").appendChild(renderjson(dataBase));
-  
-  const tree = jsonview.create(dataBase);
-  jsonview.render(tree, document.querySelector("#test"));
-  
-}
-function displayMotions(dataBase){
-  
-  document.getElementById("demo").textContent =
-  JSON.stringify(dataBase);
+  return result;
 }
 
-async function main(){
+async function searchMinutes(){
+
+  let searchTerm=document.getElementById("searchTerm").value;
   
-  let dataBase=await loadDatabase("./data/database.json");
-  displaDatabase(dataBase);
+  let query="select"+
+     " m.date,"+
+     " m.type as meeting_type,"+
+     " m.id as meeting_id,"+
+     " v.item_id,"+
+     " v.sequence as vote_sequence,"+
+     " i.number as item_number,"+
+     " i.title as item_title,"+
+     " v.motion_type,"+
+     " v.result,"+
+     " v.raw_text,"+
+     " m.agenda_url || \"&Item=\" || i.item_id as meeting_link"+
+   " from"+
+     " meeting_minutes_votes v"+
+     " join meeting_minutes_items i on v.meeting_id = i.meeting_id"+
+     " and i.external_content_id = v.external_content_id"+
+     " and i.item_id = v.item_id"+
+     " join meetings m on m.id=v.meeting_id"+
+   " where"+
+     " v.raw_text like '%"+searchTerm+"%'"+
+   " order by"+
+     " m.date desc";
+  //let query="select * from meeting_minutes_votes limit 5";
   
+  const result=await performQuery(query);
+  
+  let resultHTML="Found "+result.rows.length.toString()+" matches<br/>";
+    
+  if (result.rows.length>0){
+  
+    let indexMeetingID=result.columns.indexOf("meeting_id");
+    let indexVoteSequence=result.columns.indexOf("vote_sequence");
+    let indexMeetingLink=result.columns.indexOf("meeting_link");
+    let indexMeetingType=result.columns.indexOf("meeting_type");
+    let indexMotionType=result.columns.indexOf("motion_type");
+    
+    let indexRawText=result.columns.indexOf("raw_text");
+    let indexItemTitle=result.columns.indexOf("item_title");
+    let indexItemNumber=result.columns.indexOf("item_number");
+    let indexItemID=result.columns.indexOf("item_id");
+    
+    let indexResult=result.columns.indexOf("result");
+    let indexDate=result.columns.indexOf("date");
+    
+    resultHTML+="<table><tr><th></th>";
+    resultHTML+="<th>Date</th><th>Item Title</th><th>Minutes Text</th>";
+    /*
+    for(let i=0;i<result.columns.length;i++){
+      resultHTML+="<th>"+result.columns[i]+"</th>";
+    }
+    */
+    resultHTML+="</tr>";
+    
+    for(let i=0;i<result.rows.length;i++){
+      resultHTML+="<tr ><td>";
+      resultHTML+="<input class='motionCheck' type='checkbox' value='"+
+        result.rows[i][indexMeetingID]+","+
+        result.rows[i][indexItemID]+","+
+        result.rows[i][indexVoteSequence]+","+
+        result.rows[i][indexMeetingLink]+","+
+        result.rows[i][indexItemTitle]+","+
+        result.rows[i][indexResult]+"'></input></td>";
+      resultHTML+="<td>"+result.rows[i][indexDate]+"</td>";
+      resultHTML+="<td><a href='"+result.rows[i][indexMeetingLink]+"'>"+result.rows[i][indexItemTitle]+"</a></td>";
+      resultHTML+="<td>"+result.rows[i][indexRawText]+"</td>";
+      /*
+      for(let j=0;j<result.rows[i].length;j++){
+        resultHTML+="<td style='border: 1px solid black;'>"+result.rows[i][j]+"</td>";
+      }
+      */
+      resultHTML+="</tr>";
+    }
+    resultHTML+="</table>";
+  }
+  document.getElementById("display").innerHTML=resultHTML;
 }
 
+async function displayVotes(){
+  const checkBoxes=document.getElementsByClassName("motionCheck");
+  
+  if (!Object.hasOwn(context,"votesToDisplay")){
+    context.votesToDisplay=[];
+  }
+  if (!Object.hasOwn(context,"voters")){
+    context.voters=[];
+  }
+  
+  for(let i=0;i<checkBoxes.length;i++){
+    if (checkBoxes[i].checked) {
+      
+      let values=checkBoxes[i].value.split(",");
+      context.votesToDisplay.push({
+        meeting_id:values[0],
+        item_id:values[1],
+        vote_sequence:values[2],
+        url:values[3],
+        title:values[4],
+        result:values[5]
+        });
+    }
+  }
+  
+  console.log(context.votesToDisplay);
+  
+  for(let i=0;i<context.votesToDisplay.length;i++){
+    
+    if(!Object.hasOwn(context.votesToDisplay[i],"voteMap")){
+    
+      context.votesToDisplay[i].voteMap=new Map();
+      
+      const meeting_id=context.votesToDisplay[i].meeting_id;
+      const item_id=context.votesToDisplay[i].item_id;
+      const vote_sequence=context.votesToDisplay[i].vote_sequence;
+      
+      let query="select"+
+          " v.person_name,"+
+          "v.vote "+
+        "from meeting_minutes_vote_people v "+
+        "where "+
+          "v.meeting_id='"+context.votesToDisplay[i].meeting_id.toString()+"' and "+
+          "v.item_id='"+context.votesToDisplay[i].item_id.toString()+"' and "+
+          "v.vote_sequence='"+context.votesToDisplay[i].vote_sequence.toString()+"'";
+      
+      const result=await performQuery(query);
+      
+      for(let j=0;j<result.rows.length;j++){
+        
+        const name=result.rows[j][0];
+        const vote=result.rows[j][1];
+        context.votesToDisplay[i].voteMap.set(name,vote);
+        
+        const index=context.voters.indexOf(name);
+        if (index==-1){
+          context.voters.push(name);
+        }
+      }
+    }
+  }
+  
+  let innerHTML="<table><tr><th>Councilor</th>";
+  for(let i=0;i<context.votesToDisplay.length;i++){
+    innerHTML+="<th><a href="+context.votesToDisplay[i].url+">"+
+      context.votesToDisplay[i].title+" "+context.votesToDisplay[i].result+
+      "</a></th>";
+  }
+  innerHTML+="</tr>";
+  for(let i=0;i<context.voters.length;i++){
+    let name=context.voters[i];
+    innerHTML+="<tr><td>"+name+"</td>";
+    for(let j=0;j<context.votesToDisplay.length;j++){
+      
+      if(context.votesToDisplay[j].voteMap.has(name) ){
+        innerHTML+="<td>"+context.voteStrings.get(context.votesToDisplay[j].voteMap.get(name).toString())+"</td>";
+      }
+      else{
+        innerHTML+="<td>no record</td>";
+      }
+    }
+    innerHTML+="</tr>";
+  }
+  innerHTML+="</table>";
+  
+  document.getElementById("display").innerHTML=innerHTML;
+}
 main();
-
 </script>
+
+<input type="text" id="searchTerm" name="fname">
+<button onclick="searchMinutes()" >Search Minutes</button>
+<button onclick="displayVotes()" >Display Votes</button>
+
+<div id="display"></div>
 
 {{content}}
 
