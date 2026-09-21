@@ -8,6 +8,14 @@ table{
 }
 td{
   border: 1px solid black;
+  text-align: center;
+}
+td.yes{
+  background-color:green;
+  color: white;
+}
+td.no{
+  background-color:red;
 }
 </style>
 <head>
@@ -187,6 +195,7 @@ async function displayVotes(){
         
         const index=context.voters.indexOf(name);
         if (index==-1){
+          
           context.voters.push(name);
         }
       }
@@ -195,18 +204,33 @@ async function displayVotes(){
   
   let innerHTML="<table><tr><th>Councilor</th>";
   for(let i=0;i<context.votesToDisplay.length;i++){
+    
     innerHTML+="<th><a href="+context.votesToDisplay[i].url+">"+
       context.votesToDisplay[i].title+" "+context.votesToDisplay[i].result+
       "</a></th>";
   }
   innerHTML+="</tr>";
   for(let i=0;i<context.voters.length;i++){
+    
     let name=context.voters[i];
     innerHTML+="<tr><td>"+name+"</td>";
     for(let j=0;j<context.votesToDisplay.length;j++){
       
       if(context.votesToDisplay[j].voteMap.has(name) ){
-        innerHTML+="<td>"+context.voteStrings.get(context.votesToDisplay[j].voteMap.get(name).toString())+"</td>";
+        
+        if(context.voteStrings.get(context.votesToDisplay[j].voteMap.get(name).toString())=="yes"){
+          
+          innerHTML+="<td class='yes'>Yes</td>";
+        }
+        else{
+          
+          if(context.voteStrings.get(context.votesToDisplay[j].voteMap.get(name).toString())=="no"){
+            innerHTML+="<td class='no'>No</td>";
+          }
+          else{
+            innerHTML+="<td>Absent</td>";
+          }
+        }
       }
       else{
         innerHTML+="<td>no record</td>";
