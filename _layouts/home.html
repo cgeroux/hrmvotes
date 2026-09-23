@@ -58,9 +58,98 @@ async function performQuery(query){
   return result;
 }
 
+function tryPushTerm(term,parsedString){
+  
+  let result=term;
+  let testStr=term.trim();
+  if(testStr.length>0){
+    
+    parsedString.push(testStr);
+    result="";
+  }
+  
+  return result;
+}
+
+function parseSearchString(searchString){
+  
+  let parsedString=[]
+  let curTerm="";
+  for(let i=0;i<searchString.length;i++){
+    
+    if(searchString[i]=="("){
+      
+      curTerm=tryPushTerm(curTerm,parsedString);
+      parsedString.push("(");
+    }
+    else{
+      
+      if(searchString[i]==")"){
+        
+        curTerm=tryPushTerm(curTerm,parsedString);
+        parsedString.push(")");
+      }
+      else{
+        
+        if(searchString.substring(i,i+2).toLowerCase()=="or" &&
+          ( (searchString.substring(i-1,i)==" " || searchString.substring(i-1,i)==")") && 
+          ( (searchString.substring(i+2,i+3)==" " || searchString.substring(i+2,i+3)=="(")) )){
+          
+          curTerm=tryPushTerm(curTerm,parsedString);
+          i=i+2;
+          parsedString.push("OR");
+        }
+        else{
+          
+          if(searchString.substring(i,i+3).toLowerCase()=="and" &&
+            ( (searchString.substring(i-1,i)==" " || searchString.substring(i-1,i)==")") && 
+            ( (searchString.substring(i+3,i+4)==" " || searchString.substring(i+3,i+4)=="(")) )){
+            
+            curTerm=tryPushTerm(curTerm,parsedString);
+            i=i+3;
+            parsedString.push("AND");
+          }
+          else{
+            
+            curTerm+=searchString[i];
+          }
+        }
+      }
+    }
+  }
+  
+  curTerm=tryPushTerm(curTerm,parsedString);
+  
+  return parsedString;
+}
 async function searchMinutes(){
 
   let searchTerm=document.getElementById("searchTerm").value;
+  
+  parsedSearchString=parseSearchString(searchTerm);
+  //console.log("parsedSearchString="+parsedSearchString.toString());
+  
+  let searchText="";
+  for(let i=0;i<parsedSearchString.length;i++){
+    
+    if(parsedSearchString[i]=="(" || parsedSearchString[i]==")"){
+      
+      searchText+=parsedSearchString[i];
+    }
+    else{
+      
+      if(parsedSearchString[i]=="OR" || parsedSearchString[i]=="AND"){
+        
+        searchText+=" "+parsedSearchString[i]+" ";
+      }
+      else{
+        
+        searchText+="v.raw_text like '%"+parsedSearchString[i]+"%'";
+      }
+    }
+  }
+  
+  console.log(searchText);
   
   let query="select"+
      " m.date,"+
@@ -80,11 +169,10 @@ async function searchMinutes(){
      " and i.external_content_id = v.external_content_id"+
      " and i.item_id = v.item_id"+
      " join meetings m on m.id=v.meeting_id"+
-   " where"+
-     " v.raw_text like '%"+searchTerm+"%'"+
+   " where "+
+      searchText+
    " order by"+
      " m.date desc";
-  //let query="select * from meeting_minutes_votes limit 5";
   
   const result=await performQuery(query);
   

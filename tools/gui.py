@@ -8,6 +8,9 @@ import json
 import urllib.parse as urlp
 import copy
 import re
+import lxml.html
+import requests
+import time
 
 backGroundStyle="background-color:#404040;"
 
@@ -652,6 +655,29 @@ class MainWindow(qtw.QMainWindow):
     file=open("../data/database.json",'w')
     json.dump(self.database,file,indent=2)
 def main():
+  
+  minutes_resp = requests.get('https://pub-halifax.escribemeetings.com/Meeting.aspx?Id=7ec924d6-96b8-4dec-b65a-d1d6ce3e43fa&Agenda=Agenda&lang=English&Item=37&Tab=attachments')
+  minutes_html = lxml.html.fromstring(minutes_resp.text)
+  pdf_links = [
+    urlp.urljoin(minutes_resp.url, href)
+    for href in minutes_html.xpath('//a[contains(@class, "Link") and @tabindex]/@href')
+    if 'player' not in href.lower()
+  ]
+
+  for pdf_link in pdf_links:
+    pdf_response = requests.get(pdf_link)
+    print(pdf_link, pdf_response.headers['content-type'], pdf_response.headers['content-disposition'], pdf_response.content[:10])
+    time.sleep(30) # Be polite!
+  
+  quit()
+  '''
+  f = tempfile.NamedTemporaryFile()
+  f.write(pdf_response.content)
+  f.flush()
+  pdf = pypdf.PdfReader(f.name)
+  len(pdf.pages)
+  pdf.pages[0].extract_text()[:200]
+  '''
   
   '''
   #TODO: only parse a video url when we get to it, e.g. if we finish one link go to the next
