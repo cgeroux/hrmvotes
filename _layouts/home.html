@@ -26,17 +26,97 @@ td.no{
 
 <script>
 
-let context={baseURL:"https://hrm.datasette.danp.net/meetings.json?sql="};
-
+function constructVoteKey(meetingID,itemID,voteSequence){
+  
+  let key=meetingID.toString()+","+itemID+","+voteSequence.toString();
+  return key;
+}
+function constructURLQueryFromVotesToDisplay(context){
+  
+  let urlQuerySring="";
+  if(Object.hasOwn(context,"votesToDisplay")){
+    
+    urlQuerySringBase="?votes_to_display=";
+    urlQueryStringData="";
+    
+    for( const key of context.votesToDisplay.keys()){
+      
+      let voteToDisplay=context.votesToDisplay.get(key);
+      
+      urlQueryStringData+=voteToDisplay.meeting_id.toString()+","
+      urlQueryStringData+=voteToDisplay.item_id.toString()+","
+      urlQueryStringData+=voteToDisplay.vote_sequence.toString()+":"
+    }
+  }
+  
+  return urlQuerySringBase+encodeURIComponent(urlQueryStringData);
+}
+function addURLQueryToVotesToDisplay(context){
+  
+  let parsedURL=new URL(window.location.href);
+  votesToDisplayQueryString=parsedURL.searchParams.get("votes_to_display")
+  if(votesToDisplayQueryString){
+    
+    parts=votesToDisplayQueryString.split(":");
+    if(parts.length>1){
+      
+      if (!Object.hasOwn(context,"votesToDisplay")){
+        
+        context.votesToDisplay=new Map();
+      }
+      
+      for(let i=0;i<parts.length-1;i++){
+        
+        let vars=parts[i].split(",");
+        console.assert(vars.length===3,"Each vote should have three componenets");
+        meetingID=vars[0];
+        itemID=vars[1];
+        voteSequence=vars[2];
+        let key=constructVoteKey(meetingID,itemID,voteSequence);
+        if(!context.votesToDisplay.has(key)){
+          
+          context.votesToDisplay.set(key,{
+            meeting_id:meetingID,
+            item_id:itemID,
+            vote_sequence:voteSequence});
+        }
+      }
+      
+      displayVotes(context);
+    }
+  }
+}
 function main(){
   
+  /*
+  Scenarios:
+  1) land on page with no query string
+    -> do nothing special, just display basic page
+  2) land on page with query string
+    -> add query string items to context.votesToDisplay not already present
+    -> display votes, url should reflect items in votesToDisplay
+  
+  Scenarios when "display votes" clicked:
+  a) have a url with query string and no votesToDisplay
+    -> update votesToDisplay to contain items in query string (e.g. they match now)
+  b) have no url query string and votesToDisplay
+    -> construct url query string from votesToDisplay
+  c) have both a url query string and votesToDisplay
+    -> if votesToDisplay doesn't container item from url query string add it
+    -> construt url query string from votesToDisplay
+  */
+  
+  let context={baseURL:"https://hrm.datasette.danp.net/meetings.json?sql="};
   context.voteStrings=new Map();
   context.voteStrings.set("against","no");
   context.voteStrings.set("in_favour","yes");
   context.voteStrings.set("not_present","absent");
+  
+  addURLQueryToVotesToDisplay(context);
+  
+  return context;
 }
-
-async function performQuery(query){
+async function performQuery(context,query){
   
   const url=context.baseURL+encodeURIComponent(query);
   let result=null;
@@ -51,13 +131,12 @@ async function performQuery(query){
     result=await response.json();
   }
   catch (error){
-    
+    console.log("query="+query);
     console.error(error.message);
   }
   
   return result;
 }
-
 function tryPushTerm(term,parsedString){
   
   let result=term;
@@ -70,7 +149,6 @@ function tryPushTerm(term,parsedString){
   
   return result;
 }
-
 function parseSearchString(searchString){
   
   let parsedString=[]
@@ -84,16 +162,18 @@ function parseSearchString(searchString){
     }
     else{
       
-      if(searchString[i]==")"){
+      if(searchString[i]===")"){
         
         curTerm=tryPushTerm(curTerm,parsedString);
         parsedString.push(")");
       }
       else{
         
-        if(searchString.substring(i,i+2).toLowerCase()=="or" &&
-          ( (searchString.substring(i-1,i)==" " || searchString.substring(i-1,i)==")") && 
-          ( (searchString.substring(i+2,i+3)==" " || searchString.substring(i+2,i+3)=="(")) )){
+        if(searchString.substring(i,i+2).toLowerCase()==="or" &&
+          ( (searchString.substring(i-1,i)===" " || 
+          searchString.substring(i-1,i)===")") && 
+          ( (searchString.substring(i+2,i+3)===" " || 
+          searchString.substring(i+2,i+3)==="(")) )){
           
           curTerm=tryPushTerm(curTerm,parsedString);
           i=i+2;
@@ -101,9 +181,11 @@ function parseSearchString(searchString){
         }
         else{
           
-          if(searchString.substring(i,i+3).toLowerCase()=="and" &&
-            ( (searchString.substring(i-1,i)==" " || searchString.substring(i-1,i)==")") && 
-            ( (searchString.substring(i+3,i+4)==" " || searchString.substring(i+3,i+4)=="(")) )){
+          if(searchString.substring(i,i+3).toLowerCase()==="and" &&
+            ( (searchString.substring(i-1,i)===" " || 
+            searchString.substring(i-1,i)===")") && 
+            ( (searchString.substring(i+3,i+4)===" " || 
+            searchString.substring(i+3,i+4)==="(")) )){
             
             curTerm=tryPushTerm(curTerm,parsedString);
             i=i+3;
@@ -122,23 +204,26 @@ function parseSearchString(searchString){
   
   return parsedString;
 }
-async function searchMinutes(){
-
+async function searchMinutesClicked(context){
+  
+  //TODO: handle case with search text is empty
+  //TODO: check boxes if they match those listed in context.votesToDisplay.
+  
+  //NOTE: construct the search text
   let searchTerm=document.getElementById("searchTerm").value;
   
   parsedSearchString=parseSearchString(searchTerm);
-  //console.log("parsedSearchString="+parsedSearchString.toString());
   
   let searchText="";
   for(let i=0;i<parsedSearchString.length;i++){
     
-    if(parsedSearchString[i]=="(" || parsedSearchString[i]==")"){
+    if(parsedSearchString[i]==="(" || parsedSearchString[i]===")"){
       
       searchText+=parsedSearchString[i];
     }
     else{
       
-      if(parsedSearchString[i]=="OR" || parsedSearchString[i]=="AND"){
+      if(parsedSearchString[i]==="OR" || parsedSearchString[i]==="AND"){
         
         searchText+=" "+parsedSearchString[i]+" ";
       }
@@ -149,8 +234,7 @@ async function searchMinutes(){
     }
   }
   
-  console.log(searchText);
-  
+  //NOTE: perform the search query
   let query="select"+
      " m.date,"+
      " m.type as meeting_type,"+
@@ -174,8 +258,9 @@ async function searchMinutes(){
    " order by"+
      " m.date desc";
   
-  const result=await performQuery(query);
+  const result=await performQuery(context,query);
   
+  //NOTE: display search results
   let resultHTML="Found "+result.rows.length.toString()+" matches<br/>";
     
   if (result.rows.length>0){
@@ -205,114 +290,194 @@ async function searchMinutes(){
     
     for(let i=0;i<result.rows.length;i++){
       resultHTML+="<tr ><td>";
-      resultHTML+="<input class='motionCheck' type='checkbox' value='"+
-        result.rows[i][indexMeetingID]+","+
-        result.rows[i][indexItemID]+","+
-        result.rows[i][indexVoteSequence]+","+
-        result.rows[i][indexMeetingLink]+","+
-        result.rows[i][indexItemTitle]+","+
-        result.rows[i][indexResult]+"'></input></td>";
-      resultHTML+="<td>"+result.rows[i][indexDate]+"</td>";
-      resultHTML+="<td><a href='"+result.rows[i][indexMeetingLink]+"'>"+result.rows[i][indexItemTitle]+"</a></td>";
-      resultHTML+="<td>"+result.rows[i][indexRawText]+"</td>";
-      /*
-      for(let j=0;j<result.rows[i].length;j++){
-        resultHTML+="<td style='border: 1px solid black;'>"+result.rows[i][j]+"</td>";
+      
+      let meetingID=result.rows[i][indexMeetingID]
+      let itemID=result.rows[i][indexItemID];
+      let voteSequence=result.rows[i][indexVoteSequence];
+      let key=constructVoteKey(meetingID,itemID,voteSequence);
+      
+      let isChecked=false;
+      if(Object.hasOwn(context,"votesToDisplay")){
+      
+        if(context.votesToDisplay.has(key)){
+          
+          isChecked=true;
+        }
       }
-      */
+      
+      if(isChecked){
+        resultHTML+="<input class='motionCheck' type='checkbox' value='"+
+          meetingID+","+itemID+","+voteSequence+"' checked></input></td>";
+      }
+      else{
+        resultHTML+="<input class='motionCheck' type='checkbox' value='"+
+          meetingID+","+itemID+","+voteSequence+"'></input></td>";
+      }
+      
+      resultHTML+="<td>"+result.rows[i][indexDate]+"</td>";
+      resultHTML+="<td><a href='"+result.rows[i][indexMeetingLink]+"'>"+
+        result.rows[i][indexItemTitle]+"</a></td>";
+      resultHTML+="<td>"+result.rows[i][indexRawText]+"</td>";
       resultHTML+="</tr>";
     }
     resultHTML+="</table>";
   }
   document.getElementById("display").innerHTML=resultHTML;
 }
-
-async function displayVotes(){
+function addRemoveCheckedVotesToVotesToDisplay(context){
+  
   const checkBoxes=document.getElementsByClassName("motionCheck");
   
   if (!Object.hasOwn(context,"votesToDisplay")){
-    context.votesToDisplay=[];
-  }
-  if (!Object.hasOwn(context,"voters")){
-    context.voters=[];
+    
+    context.votesToDisplay=new Map();
   }
   
   for(let i=0;i<checkBoxes.length;i++){
+    
+    let values=checkBoxes[i].value.split(",");
+    let meetingID=values[0];
+    let itemID=values[1];
+    let voteSequence=values[2];
+    let key=constructVoteKey(meetingID,itemID,voteSequence);
     if (checkBoxes[i].checked) {
       
-      let values=checkBoxes[i].value.split(",");
-      context.votesToDisplay.push({
-        meeting_id:values[0],
-        item_id:values[1],
-        vote_sequence:values[2],
-        url:values[3],
-        title:values[4],
-        result:values[5]
-        });
+      //NOTE: only add new votes, prevents duplicates
+      if(!context.votesToDisplay.has(key)){
+        
+        context.votesToDisplay.set(key,{
+          meeting_id:meetingID,
+          item_id:itemID,
+          vote_sequence:voteSequence});
+      }
+    }
+    else{
+      
+      //NOTE: if not checked, remove it
+      if(context.votesToDisplay.has(key)){
+        
+        context.votesToDisplay.delete(key);
+      }
     }
   }
+}
+async function getVotesForVotesToDisplay(context){
   
-  console.log(context.votesToDisplay);
+  let voters=[];
   
-  for(let i=0;i<context.votesToDisplay.length;i++){
+  for( const key of context.votesToDisplay.keys()){
     
-    if(!Object.hasOwn(context.votesToDisplay[i],"voteMap")){
+    let voteToDisplay=context.votesToDisplay.get(key);
     
-      context.votesToDisplay[i].voteMap=new Map();
+    //NOTE: if we don't have a voteMap for votesToDisplay get one
+    if(!Object.hasOwn(voteToDisplay,"voteMap")){
       
-      const meeting_id=context.votesToDisplay[i].meeting_id;
-      const item_id=context.votesToDisplay[i].item_id;
-      const vote_sequence=context.votesToDisplay[i].vote_sequence;
+      voteToDisplay.voteMap=new Map();
       
-      let query="select"+
-          " v.person_name,"+
-          "v.vote "+
-        "from meeting_minutes_vote_people v "+
+      let query=
+        "select "+
+          "p.person_name, "+
+          "p.vote, "+
+          //"m.agenda_url || \"&Item=\" || p.item_id as meeting_link, "+
+          "m.agenda_url as meeting_link, "+
+          "i.title, "+
+          "v.result "+
+        "from meeting_minutes_vote_people p "+
+        "join meeting_minutes_votes v on "+
+          "p.meeting_id=v.meeting_id and "+
+          "p.item_id=v.item_id and "+
+          "p.vote_sequence=v.sequence and "+
+          "p.external_content_id=v.external_content_id "+
+        "join meeting_minutes_items i on "+
+          "p.meeting_id=i.meeting_id and "+
+          "p.item_id=i.item_id and "+
+          "p.external_content_id=i.external_content_id "+
+        "join meetings m on "+
+          "p.meeting_id=m.id "+
         "where "+
-          "v.meeting_id='"+context.votesToDisplay[i].meeting_id.toString()+"' and "+
-          "v.item_id='"+context.votesToDisplay[i].item_id.toString()+"' and "+
-          "v.vote_sequence='"+context.votesToDisplay[i].vote_sequence.toString()+"'";
+          "p.meeting_id='"+voteToDisplay.meeting_id.toString()+"' and "+
+          "p.item_id='"+voteToDisplay.item_id.toString()+"' and "+
+          "p.vote_sequence='"+voteToDisplay.vote_sequence.toString()+"'";
       
-      const result=await performQuery(query);
+      const result=await performQuery(context,query);
+      
+      console.assert(result.rows.length>0,
+        "Must have at least one result from query");
+      
+      voteToDisplay.url=result.rows[0][2];
+      voteToDisplay.title=result.rows[0][3];
+      voteToDisplay.result=result.rows[0][4];
       
       for(let j=0;j<result.rows.length;j++){
         
         const name=result.rows[j][0];
         const vote=result.rows[j][1];
-        context.votesToDisplay[i].voteMap.set(name,vote);
+        voteToDisplay.voteMap.set(name,vote);
         
-        const index=context.voters.indexOf(name);
-        if (index==-1){
+        const index=voters.indexOf(name);
+        if (index===-1){
           
-          context.voters.push(name);
+          voters.push(name);
+        }
+      }
+    }
+    else{
+      
+      for( const key of voteToDisplay.voteMap.keys()){
+        
+        const index=voters.indexOf(key);
+        if (index===-1){
+          
+          voters.push(key);
         }
       }
     }
   }
   
+  return voters;
+}
+function updateURL(queryString){
+  
+  let parsedURL=new URL(window.location.href);
+  newURL=parsedURL.protocol+"//"+parsedURL.host+queryString;
+  location.replace(newURL);
+}
+async function displayVotes(context){
+  
+  let voters=await getVotesForVotesToDisplay(context);
+  
+  //NOTE: generate HTML to display votes
   let innerHTML="<table><tr><th>Councilor</th>";
-  for(let i=0;i<context.votesToDisplay.length;i++){
+  for( const key of context.votesToDisplay.keys()){
     
-    innerHTML+="<th><a href="+context.votesToDisplay[i].url+">"+
-      context.votesToDisplay[i].title+" "+context.votesToDisplay[i].result+
+    voteToDisplay=context.votesToDisplay.get(key);
+    
+    innerHTML+="<th><a href="+voteToDisplay.url+">"+
+      voteToDisplay.title+" "+voteToDisplay.result+
       "</a></th>";
   }
+  
   innerHTML+="</tr>";
-  for(let i=0;i<context.voters.length;i++){
+  for(let i=0;i<voters.length;i++){
     
-    let name=context.voters[i];
+    let name=voters[i];
     innerHTML+="<tr><td>"+name+"</td>";
-    for(let j=0;j<context.votesToDisplay.length;j++){
+    for( const key of context.votesToDisplay.keys()){
       
-      if(context.votesToDisplay[j].voteMap.has(name) ){
+      let voteToDisplay=context.votesToDisplay.get(key);
+      
+      if(voteToDisplay.voteMap.has(name) ){
         
-        if(context.voteStrings.get(context.votesToDisplay[j].voteMap.get(name).toString())=="yes"){
+        if(context.voteStrings.get(
+          voteToDisplay.voteMap.get(name).toString())==="yes"){
           
           innerHTML+="<td class='yes'>Yes</td>";
         }
         else{
           
-          if(context.voteStrings.get(context.votesToDisplay[j].voteMap.get(name).toString())=="no"){
+          if(context.voteStrings.get(
+            voteToDisplay.voteMap.get(name).toString())==="no"){
+            
             innerHTML+="<td class='no'>No</td>";
           }
           else{
@@ -330,12 +495,19 @@ async function displayVotes(){
   
   document.getElementById("display").innerHTML=innerHTML;
 }
-main();
+async function displayVotesClicked(context){
+  
+  addRemoveCheckedVotesToVotesToDisplay(context);
+  let queryString=constructURLQueryFromVotesToDisplay(context);
+  updateURL(queryString);
+}
+
+let cg_context=main();
 </script>
 
 <input type="text" id="searchTerm" name="fname">
-<button onclick="searchMinutes()" >Search Minutes</button>
-<button onclick="displayVotes()" >Display Votes</button>
+<button onclick="searchMinutesClicked(cg_context)" >Search Minutes</button>
+<button onclick="displayVotesClicked(cg_context)" >Display Votes</button>
 
 <div id="display"></div>
 
