@@ -439,7 +439,7 @@ async function getVotesForVotesToDisplay(context){
 function updateURL(queryString){
   
   let parsedURL=new URL(window.location.href);
-  newURL=parsedURL.protocol+"//"+parsedURL.host+queryString;
+  newURL=parsedURL.protocol+"//"+parsedURL.host+parsedURL.pathname+queryString;
   location.replace(newURL);
 }
 async function displayVotes(context){
