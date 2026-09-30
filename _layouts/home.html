@@ -36,16 +36,16 @@ function constructURLQueryFromVotesToDisplay(context){
   let urlQuerySring="";
   if(Object.hasOwn(context,"votesToDisplay")){
     
-    urlQuerySringBase="?votes_to_display=";
+    urlQuerySringBase="?votes=";
     urlQueryStringData="";
     
     for( const key of context.votesToDisplay.keys()){
       
       let voteToDisplay=context.votesToDisplay.get(key);
       
-      urlQueryStringData+=voteToDisplay.meeting_id.toString()+","
-      urlQueryStringData+=voteToDisplay.item_id.toString()+","
-      urlQueryStringData+=voteToDisplay.vote_sequence.toString()+":"
+      urlQueryStringData+=voteToDisplay.meeting_id.toString()+"."
+      urlQueryStringData+=voteToDisplay.item_id.toString()+"."
+      urlQueryStringData+=voteToDisplay.vote_sequence.toString()+"_"
     }
   }
   
@@ -54,10 +54,10 @@ function constructURLQueryFromVotesToDisplay(context){
 function addURLQueryToVotesToDisplay(context){
   
   let parsedURL=new URL(window.location.href);
-  votesToDisplayQueryString=parsedURL.searchParams.get("votes_to_display")
+  votesToDisplayQueryString=parsedURL.searchParams.get("votes")
   if(votesToDisplayQueryString){
     
-    parts=votesToDisplayQueryString.split(":");
+    parts=votesToDisplayQueryString.split("_");
     if(parts.length>1){
       
       if (!Object.hasOwn(context,"votesToDisplay")){
@@ -67,7 +67,7 @@ function addURLQueryToVotesToDisplay(context){
       
       for(let i=0;i<parts.length-1;i++){
         
-        let vars=parts[i].split(",");
+        let vars=parts[i].split(".");
         console.assert(vars.length===3,"Each vote should have three componenets");
         meetingID=vars[0];
         itemID=vars[1];
@@ -207,7 +207,6 @@ function parseSearchString(searchString){
 async function searchMinutesClicked(context){
   
   //TODO: handle case with search text is empty
-  //TODO: check boxes if they match those listed in context.votesToDisplay.
   
   //NOTE: construct the search text
   let searchTerm=document.getElementById("searchTerm").value;
@@ -372,14 +371,17 @@ async function getVotesForVotesToDisplay(context){
     //NOTE: if we don't have a voteMap for votesToDisplay get one
     if(!Object.hasOwn(voteToDisplay,"voteMap")){
       
+      console.log("meeting_id="+voteToDisplay.meeting_id.toString());
+      console.log("item_id="+voteToDisplay.item_id.toString());
+      console.log("vote_sequence="+voteToDisplay.vote_sequence.toString());
+      
       voteToDisplay.voteMap=new Map();
       
       let query=
         "select "+
           "p.person_name, "+
           "p.vote, "+
-          //"m.agenda_url || \"&Item=\" || p.item_id as meeting_link, "+
-          "m.agenda_url as meeting_link, "+
+          "m.agenda_url || '&Item=' || v.item_id as meeting_link, "+
           "i.title, "+
           "v.result "+
         "from meeting_minutes_vote_people p "+
@@ -400,24 +402,52 @@ async function getVotesForVotesToDisplay(context){
           "p.vote_sequence='"+voteToDisplay.vote_sequence.toString()+"'";
       
       const result=await performQuery(context,query);
-      
-      console.assert(result.rows.length>0,
-        "Must have at least one result from query");
-      
-      voteToDisplay.url=result.rows[0][2];
-      voteToDisplay.title=result.rows[0][3];
-      voteToDisplay.result=result.rows[0][4];
-      
-      for(let j=0;j<result.rows.length;j++){
+      if(result.rows.length>0){
         
-        const name=result.rows[j][0];
-        const vote=result.rows[j][1];
-        voteToDisplay.voteMap.set(name,vote);
+        voteToDisplay.url=result.rows[0][2];
+        voteToDisplay.title=result.rows[0][3];
+        voteToDisplay.result=result.rows[0][4];
         
-        const index=voters.indexOf(name);
-        if (index===-1){
+        for(let j=0;j<result.rows.length;j++){
           
-          voters.push(name);
+          const name=result.rows[j][0];
+          const vote=result.rows[j][1];
+          voteToDisplay.voteMap.set(name,vote);
+          
+          const index=voters.indexOf(name);
+          if (index===-1){
+            
+            voters.push(name);
+          }
+        }
+      }
+      else{
+        
+        //NOTE: didn't get any voter information, do separate query just to 
+        //get url,title, and result
+        let query=
+          "select "+
+            "m.agenda_url || '&Item=' || v.item_id as meeting_link, "+
+            "i.title, "+
+            "v.result "+
+          "from meeting_minutes_votes v "+
+          "join meeting_minutes_items i on "+
+            "v.meeting_id=i.meeting_id and "+
+            "v.item_id=i.item_id and "+
+            "v.external_content_id=i.external_content_id "+
+          "join meetings m on "+
+            "v.meeting_id=m.id "+
+          "where "+
+            "v.meeting_id='"+voteToDisplay.meeting_id.toString()+"' and "+
+            "v.item_id='"+voteToDisplay.item_id.toString()+"' and "+
+            "v.sequence='"+voteToDisplay.vote_sequence.toString()+"'";
+        
+        const result=await performQuery(context,query);
+        if(result.rows.length>0){
+          
+          voteToDisplay.url=result.rows[0][0];
+          voteToDisplay.title=result.rows[0][1];
+          voteToDisplay.result=result.rows[0][2];
         }
       }
     }
@@ -453,8 +483,7 @@ async function displayVotes(context){
     voteToDisplay=context.votesToDisplay.get(key);
     
     innerHTML+="<th><a href="+voteToDisplay.url+">"+
-      voteToDisplay.title+" "+voteToDisplay.result+
-      "</a></th>";
+      voteToDisplay.title+"</a><br/>"+voteToDisplay.result+"</th>";
   }
   
   innerHTML+="</tr>";
