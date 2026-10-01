@@ -6,7 +6,7 @@
 table{
   border-collapse: collapse;
 }
-td{
+td,th{
   border: 1px solid black;
   text-align: center;
 }
@@ -17,12 +17,20 @@ td.yes{
 td.no{
   background-color:red;
 }
+.stickyHeader{
+  position: fixed;
+  top: 0;
+  width: 100%;
+  background-color: white;
+  padding: 10px;
+}
+#display{
+  padding-top: 75px;
+}
 </style>
 <head>
 </head>
-<body>
-
-<p id="demo"></p>
+<body onload="onLoad(cg_context)">
 
 <script>
 
@@ -33,19 +41,23 @@ function constructVoteKey(meetingID,itemID,voteSequence){
 }
 function constructURLQueryFromVotesToDisplay(context){
   
-  let urlQuerySring="";
+  let urlQuerySringBase="";
+  let urlQueryStringData="";
   if(Object.hasOwn(context,"votesToDisplay")){
     
-    urlQuerySringBase="?votes=";
-    urlQueryStringData="";
-    
-    for( const key of context.votesToDisplay.keys()){
+    if(context.votesToDisplay.size>0){
       
-      let voteToDisplay=context.votesToDisplay.get(key);
+      urlQuerySringBase="?votes=";
+      urlQueryStringData="";
       
-      urlQueryStringData+=voteToDisplay.meeting_id.toString()+"."
-      urlQueryStringData+=voteToDisplay.item_id.toString()+"."
-      urlQueryStringData+=voteToDisplay.vote_sequence.toString()+"_"
+      for( const key of context.votesToDisplay.keys()){
+        
+        let voteToDisplay=context.votesToDisplay.get(key);
+        
+        urlQueryStringData+=voteToDisplay.meeting_id.toString()+"."
+        urlQueryStringData+=voteToDisplay.item_id.toString()+"."
+        urlQueryStringData+=voteToDisplay.vote_sequence.toString()+"_"
+      }
     }
   }
   
@@ -86,35 +98,21 @@ function addURLQueryToVotesToDisplay(context){
     }
   }
 }
-function main(){
-  
-  /*
-  Scenarios:
-  1) land on page with no query string
-    -> do nothing special, just display basic page
-  2) land on page with query string
-    -> add query string items to context.votesToDisplay not already present
-    -> display votes, url should reflect items in votesToDisplay
-  
-  Scenarios when "display votes" clicked:
-  a) have a url with query string and no votesToDisplay
-    -> update votesToDisplay to contain items in query string (e.g. they match now)
-  b) have no url query string and votesToDisplay
-    -> construct url query string from votesToDisplay
-  c) have both a url query string and votesToDisplay
-    -> if votesToDisplay doesn't container item from url query string add it
-    -> construt url query string from votesToDisplay
-  */
+function setupContext(){
   
   let context={baseURL:"https://hrm.datasette.danp.net/meetings.json?sql="};
   context.voteStrings=new Map();
   context.voteStrings.set("against","no");
   context.voteStrings.set("in_favour","yes");
   context.voteStrings.set("not_present","absent");
-  
+  context.maxAllowedVotes=20;
+  context.displayingVotes=false;
   addURLQueryToVotesToDisplay(context);
   
   return context;
+}
+function onLoad(context){
+  updateSelectedVoteEvents(context);
 }
 async function performQuery(context,query){
   
@@ -204,95 +202,102 @@ function parseSearchString(searchString){
   
   return parsedString;
 }
-async function searchMinutesClicked(context){
+function updateSelectedVoteEvents(context){
   
-  //TODO: handle case with search text is empty
+  addRemoveCheckedVotesToVotesToDisplay(context);
   
-  //NOTE: construct the search text
-  let searchTerm=document.getElementById("searchTerm").value;
+  let resultHTML=context.votesToDisplay.size.toString()+"/"+
+    context.maxAllowedVotes.toString()+" vote events selected";
   
-  parsedSearchString=parseSearchString(searchTerm);
+  document.getElementById("votesSelected").innerHTML=resultHTML;
   
-  let searchText="";
-  for(let i=0;i<parsedSearchString.length;i++){
+  document.getElementById("displayVotesButton").disabled=true;
+  
+  if(!context.displayingVotes){
     
-    if(parsedSearchString[i]==="(" || parsedSearchString[i]===")"){
+    if(context.votesToDisplay.size>0){
       
-      searchText+=parsedSearchString[i];
+      console.log("enabled displayVotesButton");
+      document.getElementById("displayVotesButton").disabled=false;
     }
     else{
       
-      if(parsedSearchString[i]==="OR" || parsedSearchString[i]==="AND"){
-        
-        searchText+=" "+parsedSearchString[i]+" ";
-      }
-      else{
-        
-        searchText+="v.raw_text like '%"+parsedSearchString[i]+"%'";
-      }
+      console.log("disabled displayVotesButton");
+      document.getElementById("displayVotesButton").disabled=true;
+      //TODO: should I update the URL here or not?
+      //let queryString=constructURLQueryFromVotesToDisplay(context);
+      //updateURL(queryString);
     }
   }
   
-  //NOTE: perform the search query
-  let query="select"+
-     " m.date,"+
-     " m.type as meeting_type,"+
-     " m.id as meeting_id,"+
-     " v.item_id,"+
-     " v.sequence as vote_sequence,"+
-     " i.number as item_number,"+
-     " i.title as item_title,"+
-     " v.motion_type,"+
-     " v.result,"+
-     " v.raw_text,"+
-     " m.agenda_url || \"&Item=\" || i.item_id as meeting_link"+
-   " from"+
-     " meeting_minutes_votes v"+
-     " join meeting_minutes_items i on v.meeting_id = i.meeting_id"+
-     " and i.external_content_id = v.external_content_id"+
-     " and i.item_id = v.item_id"+
-     " join meetings m on m.id=v.meeting_id"+
-   " where "+
-      searchText+
-   " order by"+
-     " m.date desc";
+  document.getElementById("viewSelectedVotesButton").disabled=true;
+  if(context.votesToDisplay.size>0){
+    document.getElementById("viewSelectedVotesButton").disabled=false;
+  }
+}
+function disableAndEnableCheckBoxesAsNeeded(context){
   
-  const result=await performQuery(context,query);
+  const checkBoxes=document.getElementsByClassName("motionCheck");
+  let overMax=false;
+  if(context.votesToDisplay.size>=context.maxAllowedVotes){
+    
+    for(let i=0;i<checkBoxes.length;i++){
+      
+      if (checkBoxes[i].checked) {
+        
+        checkBoxes[i].disabled=false;
+      }
+      else{
+        
+        checkBoxes[i].disabled=true;
+      }
+    }
+  }
+  else{
+    
+    for(let i=0;i<checkBoxes.length;i++){
+      
+      checkBoxes[i].disabled=false;
+    }
+  }
+}
+function checkboxClicked(context){
+  
+  updateSelectedVoteEvents(context);
+  disableAndEnableCheckBoxesAsNeeded(context);
+}
+function displayMinutes(context,rows,columns){
   
   //NOTE: display search results
-  let resultHTML="Found "+result.rows.length.toString()+" matches<br/>";
+  let resultHTML="Found "+rows.length.toString()+" matches<br/>";
     
-  if (result.rows.length>0){
-  
-    let indexMeetingID=result.columns.indexOf("meeting_id");
-    let indexVoteSequence=result.columns.indexOf("vote_sequence");
-    let indexMeetingLink=result.columns.indexOf("meeting_link");
-    let indexMeetingType=result.columns.indexOf("meeting_type");
-    let indexMotionType=result.columns.indexOf("motion_type");
+  if (rows.length>0){
+    let indexDate=columns.indexOf("date");
+    let indexMeetingID=columns.indexOf("meeting_id");
+    let indexVoteSequence=columns.indexOf("vote_sequence");
+    let indexMeetingLink=columns.indexOf("meeting_link");
     
-    let indexRawText=result.columns.indexOf("raw_text");
-    let indexItemTitle=result.columns.indexOf("item_title");
-    let indexItemNumber=result.columns.indexOf("item_number");
-    let indexItemID=result.columns.indexOf("item_id");
+    let indexMeetingType=columns.indexOf("meeting_type");
+    let indexMotionType=columns.indexOf("motion_type");
+    //let indexItemNumber=columns.indexOf("item_number");
+    //let indexResult=columns.indexOf("result");
     
-    let indexResult=result.columns.indexOf("result");
-    let indexDate=result.columns.indexOf("date");
+    let indexRawText=columns.indexOf("raw_text");
+    let indexItemTitle=columns.indexOf("item_title");
+    let indexItemID=columns.indexOf("item_id");
+    
     
     resultHTML+="<table><tr><th></th>";
-    resultHTML+="<th>Date</th><th>Item Title</th><th>Minutes Text</th>";
-    /*
-    for(let i=0;i<result.columns.length;i++){
-      resultHTML+="<th>"+result.columns[i]+"</th>";
-    }
-    */
+    resultHTML+="<th>Date</th><th>Meeting Type</th><th>Motion Type</th><th>Item Title</th><th>Minutes Text</th>";
     resultHTML+="</tr>";
     
-    for(let i=0;i<result.rows.length;i++){
+    for(let i=0;i<rows.length;i++){
+      
       resultHTML+="<tr ><td>";
       
-      let meetingID=result.rows[i][indexMeetingID]
-      let itemID=result.rows[i][indexItemID];
-      let voteSequence=result.rows[i][indexVoteSequence];
+      let meetingID=rows[i][indexMeetingID]
+      let itemID=rows[i][indexItemID];
+      let voteSequence=rows[i][indexVoteSequence];
       let key=constructVoteKey(meetingID,itemID,voteSequence);
       
       let isChecked=false;
@@ -306,22 +311,134 @@ async function searchMinutesClicked(context){
       
       if(isChecked){
         resultHTML+="<input class='motionCheck' type='checkbox' value='"+
-          meetingID+","+itemID+","+voteSequence+"' checked></input></td>";
+          meetingID+","+itemID+","+voteSequence+
+          "' onclick='checkboxClicked(cg_context)' checked></input></td>";
       }
       else{
         resultHTML+="<input class='motionCheck' type='checkbox' value='"+
-          meetingID+","+itemID+","+voteSequence+"'></input></td>";
+          meetingID+","+itemID+","+voteSequence+
+          "' onclick='checkboxClicked(cg_context)'></input></td>";
       }
       
-      resultHTML+="<td>"+result.rows[i][indexDate]+"</td>";
-      resultHTML+="<td><a href='"+result.rows[i][indexMeetingLink]+"'>"+
-        result.rows[i][indexItemTitle]+"</a></td>";
-      resultHTML+="<td>"+result.rows[i][indexRawText]+"</td>";
+      resultHTML+="<td>"+rows[i][indexDate]+"</td>";
+      resultHTML+="<td>"+rows[i][indexMeetingType]+"</td>";
+      resultHTML+="<td>"+rows[i][indexMotionType]+"</td>";
+      
+      resultHTML+="<td><a href='"+rows[i][indexMeetingLink]+"'>"+
+        rows[i][indexItemTitle]+"</a></td>";
+      resultHTML+="<td>"+rows[i][indexRawText]+"</td>";
       resultHTML+="</tr>";
     }
     resultHTML+="</table>";
   }
+  return resultHTML;
+}
+async function searchMinutesClicked(context){
+  
+  //TODO: handle case with search text is empty
+  
+  context.displayingVotes=false;
+  
+  //NOTE: construct the search text
+  let searchTerm=document.getElementById("searchTerm").value;
+  let resultHTML="No search terms given <br/>";
+  
+  let searchText="v.raw_text like '%%'";
+  if(searchTerm!=""){
+    
+    searchText="";
+    parsedSearchString=parseSearchString(searchTerm);
+    for(let i=0;i<parsedSearchString.length;i++){
+      
+      if(parsedSearchString[i]==="(" || parsedSearchString[i]===")"){
+        
+        searchText+=parsedSearchString[i];
+      }
+      else{
+        
+        if(parsedSearchString[i]==="OR" || parsedSearchString[i]==="AND"){
+          
+          searchText+=" "+parsedSearchString[i]+" ";
+        }
+        else{
+          
+          searchText+="v.raw_text like '%"+parsedSearchString[i]+"%'";
+        }
+      }
+    }
+  }
+  
+  //NOTE: perform the search query
+  let query="select"+
+    " m.date,"+
+    " m.type as meeting_type,"+
+    " m.id as meeting_id,"+
+    " v.item_id,"+
+    " v.sequence as vote_sequence,"+
+    " i.number as item_number,"+
+    " i.title as item_title,"+
+    " v.motion_type,"+
+    " v.result,"+
+    " v.raw_text,"+
+    " m.agenda_url || '&Item=' || i.item_id as meeting_link"+
+  " from"+
+    " meeting_minutes_votes v"+
+    " join meeting_minutes_items i on v.meeting_id = i.meeting_id"+
+    " and i.external_content_id = v.external_content_id"+
+    " and i.item_id = v.item_id"+
+    " join meetings m on m.id=v.meeting_id"+
+  " where "+
+      searchText+
+  " order by"+
+    " m.date desc";
+  
+  const result=await performQuery(context,query);
+  resultHTML=displayMinutes(context,result.rows,result.columns);
   document.getElementById("display").innerHTML=resultHTML;
+  
+  updateSelectedVoteEvents(context);
+}
+async function viewSelectedVotesClicked(context){
+  
+  context.displayingVotes=false;
+  
+  addRemoveCheckedVotesToVotesToDisplay(context);
+  let voters=await getVotesForVotesToDisplay(context);
+  
+  let rows=[];
+  let columns=[
+    "date",
+    "meeting_type",
+    "meeting_link",
+    "item_title",
+    "result",
+    "raw_text",
+    "motion_type",
+    "meeting_id",
+    "vote_sequence",
+    "item_id"
+    ];
+  for( const key of context.votesToDisplay.keys()){
+    
+    let voteToDisplay=context.votesToDisplay.get(key);
+    
+    rows.push([
+      voteToDisplay.date,
+      voteToDisplay.meetingType,
+      voteToDisplay.url,
+      voteToDisplay.title,
+      voteToDisplay.result,
+      voteToDisplay.text,
+      voteToDisplay.motionType,
+      voteToDisplay.meeting_id,
+      voteToDisplay.vote_sequence,
+      voteToDisplay.item_id]);
+  }
+  
+  let resultHTML=displayMinutes(context,rows,columns);
+  document.getElementById("display").innerHTML=resultHTML;
+  
+  updateSelectedVoteEvents(context);
 }
 function addRemoveCheckedVotesToVotesToDisplay(context){
   
@@ -371,19 +488,19 @@ async function getVotesForVotesToDisplay(context){
     //NOTE: if we don't have a voteMap for votesToDisplay get one
     if(!Object.hasOwn(voteToDisplay,"voteMap")){
       
-      console.log("meeting_id="+voteToDisplay.meeting_id.toString());
-      console.log("item_id="+voteToDisplay.item_id.toString());
-      console.log("vote_sequence="+voteToDisplay.vote_sequence.toString());
-      
       voteToDisplay.voteMap=new Map();
       
       let query=
         "select "+
+          "m.date, "+
+          "m.type as meeting_type, "+
           "p.person_name, "+
           "p.vote, "+
           "m.agenda_url || '&Item=' || v.item_id as meeting_link, "+
           "i.title, "+
-          "v.result "+
+          "v.result, "+
+          "v.raw_text, "+
+          "v.motion_type "+
         "from meeting_minutes_vote_people p "+
         "join meeting_minutes_votes v on "+
           "p.meeting_id=v.meeting_id and "+
@@ -404,14 +521,18 @@ async function getVotesForVotesToDisplay(context){
       const result=await performQuery(context,query);
       if(result.rows.length>0){
         
-        voteToDisplay.url=result.rows[0][2];
-        voteToDisplay.title=result.rows[0][3];
-        voteToDisplay.result=result.rows[0][4];
+        voteToDisplay.date=result.rows[0][0];
+        voteToDisplay.meetingType=result.rows[0][1];
+        voteToDisplay.url=result.rows[0][4];
+        voteToDisplay.title=result.rows[0][5];
+        voteToDisplay.result=result.rows[0][6];
+        voteToDisplay.text=result.rows[0][7];
+        voteToDisplay.motionType=result.rows[0][8];
         
         for(let j=0;j<result.rows.length;j++){
           
-          const name=result.rows[j][0];
-          const vote=result.rows[j][1];
+          const name=result.rows[j][2];
+          const vote=result.rows[j][3];
           voteToDisplay.voteMap.set(name,vote);
           
           const index=voters.indexOf(name);
@@ -427,9 +548,12 @@ async function getVotesForVotesToDisplay(context){
         //get url,title, and result
         let query=
           "select "+
+            "m.date, "+
+            "m.type as meeting_type, "+
             "m.agenda_url || '&Item=' || v.item_id as meeting_link, "+
             "i.title, "+
-            "v.result "+
+            "v.result, "+
+            "v.motion_type "+
           "from meeting_minutes_votes v "+
           "join meeting_minutes_items i on "+
             "v.meeting_id=i.meeting_id and "+
@@ -445,9 +569,12 @@ async function getVotesForVotesToDisplay(context){
         const result=await performQuery(context,query);
         if(result.rows.length>0){
           
-          voteToDisplay.url=result.rows[0][0];
-          voteToDisplay.title=result.rows[0][1];
-          voteToDisplay.result=result.rows[0][2];
+          voteToDisplay.date=result.rows[0][0];
+          voteToDisplay.meetingType=result.rows[0][1];
+          voteToDisplay.url=result.rows[0][2];
+          voteToDisplay.title=result.rows[0][3];
+          voteToDisplay.result=result.rows[0][4];
+          voteToDisplay.motionType=result.rows[0][5];
         }
       }
     }
@@ -469,11 +596,15 @@ async function getVotesForVotesToDisplay(context){
 function updateURL(queryString){
   
   let parsedURL=new URL(window.location.href);
-  newURL=parsedURL.protocol+"//"+parsedURL.host+parsedURL.pathname+queryString;
-  location.replace(newURL);
+  //if(parsedURL.search!=queryString){
+    
+    newURL=parsedURL.protocol+"//"+parsedURL.host+parsedURL.pathname+queryString;
+    location.replace(newURL);
+  //}
 }
 async function displayVotes(context){
   
+  context.displayingVotes=true;
   let voters=await getVotesForVotesToDisplay(context);
   
   //NOTE: generate HTML to display votes
@@ -527,16 +658,70 @@ async function displayVotes(context){
 async function displayVotesClicked(context){
   
   addRemoveCheckedVotesToVotesToDisplay(context);
+  
   let queryString=constructURLQueryFromVotesToDisplay(context);
+  console.log("queryString="+queryString);
   updateURL(queryString);
 }
-
-let cg_context=main();
+function displayHelpClicked(context){
+  
+  let helpDiv = document.getElementById("help");
+  console.log("helpDiv.style.display="+helpDiv.style.display);
+  if (helpDiv.style.display === "none") {
+    
+    console.log("display was none");
+    helpDiv.style.display = "block";
+  }
+  else {
+    
+    console.log("display was block");
+    helpDiv.style.display = "none";
+  }
+}
+let cg_context=setupContext();
 </script>
 
+<div class="stickyHeader">
 <input type="text" id="searchTerm" name="fname">
 <button onclick="searchMinutesClicked(cg_context)" >Search Minutes</button>
-<button onclick="displayVotesClicked(cg_context)" >Display Votes</button>
+<button id="viewSelectedVotesButton" onclick="viewSelectedVotesClicked(cg_context)" disabled>View Selected Motions</button>
+<button id="displayVotesButton" onclick="displayVotesClicked(cg_context)" disabled>Display Votes</button>
+<button id="displayHelpButton" onclick="displayHelpClicked(cg_context)">?</button>
+<div id="votesSelected"></div>
+<div id="help" style="display: none;">
+<ul>
+  <li>Minutes search:
+    <ul>
+      <li>Empty search text matches all minutes.</li>
+      <li>Can use "and" and "or" to combine search terms, along with brackets. For example the search "(bike or bus) and lane" will find all the motions that contains the words bike and lane or bus and lane.</li>
+    </ul>
+  </li>
+  <li>Selecting motions:
+    <ul>
+      <li>Once you have performed a search of meeting minutes and the results are displayed, you can select different motions by clicking the box to the left of a given motion to a maximum of 20 selected motions.</il>
+    </ul>
+  </li>
+  <li>Displaying motion votes:
+    <ul>
+      <li>Once you have at least one motion selected, you can display it by clicking the "Display Votes" button.</li>
+    </ul>
+  </li>
+  <li>Removing selected motions:
+    <ul>
+      <li>Once you have one or more motions selected, you can view them by clicking on the "View Selected Motions" button. There you can check/uncheck motions to update your selection of motions.</li>
+    </ul>
+  </li>
+  <li>URL query string:
+    <ul><li>When you click the "Display Votes" button, the URL you are visiting will be updated to include your selected motions. This URL can then be shared to show your selected motions and their votes with others.</li></ul>
+  </li>
+  <li>Displaying Help:
+    <ul>
+      <li>Since you are reading this, you likely already know that the "?" button displays this help text. However, clicking it again will hide this help text again to get it out of your way.</li>
+    </ul>
+  </li>
+</ul>
+</div>
+</div>
 
 <div id="display"></div>
 
